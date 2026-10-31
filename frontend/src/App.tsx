@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 
 type Status = 'Pending' | 'In Progress' | 'Completed'
 type Priority = 'Low' | 'Medium' | 'High'
@@ -85,7 +85,7 @@ function App() {
   ).length
 
   // Create an assignment using the backend API.
-  async function addAssignment(event: React.FormEvent<HTMLFormElement>) {
+  async function addAssignment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setSaving(true)
