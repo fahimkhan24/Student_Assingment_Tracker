@@ -1,14 +1,23 @@
-
 from uuid import uuid4
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 app = FastAPI(
     title="Student Assignment Tracker API",
     description="Backend API for Student Assignment Tracker",
     version="1.0.0",
+)
+
+# Allow cross-origin requests from Vercel and local development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permits requests from any origin (including your Vercel URL)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permits GET, POST, PUT, DELETE, OPTIONS, etc.
+    allow_headers=["*"],
 )
 
 # Assignment status and priority options
