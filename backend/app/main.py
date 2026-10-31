@@ -13,12 +13,19 @@ app = FastAPI(
 )
 
 # CORS configuration for Vercel and local development
+app = FastAPI(
+    title="Student Assignment Tracker API",
+    description="Backend API for Student Assignment Tracker",
+    version="1.0.0",
+)
+
+# CORS configuration for Vercel and local development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://student-assingment-tracker.vercel.app",
         "http://localhost:5173",
         "http://localhost:5174",
-        "https://student-assingment-tracker.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

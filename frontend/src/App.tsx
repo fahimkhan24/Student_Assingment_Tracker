@@ -12,7 +12,7 @@ interface Assignment {
   status: Status
 }
 
-const API_URL = '/api/assignments'
+const API_URL = `${import.meta.env.VITE_API_URL}/assignments`
 
 const buttonClass =
   'rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700'
