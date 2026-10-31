@@ -1,3 +1,4 @@
+
 from uuid import uuid4
 from typing import Literal
 
@@ -11,12 +12,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow cross-origin requests from Vercel and local development
+# CORS configuration for Vercel and local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permits requests from any origin (including your Vercel URL)
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://student-assingment-tracker.vercel.app",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Permits GET, POST, PUT, DELETE, OPTIONS, etc.
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -51,7 +56,9 @@ assignments: dict[str, Assignment] = {}
 
 @app.get("/")
 def root():
-    return {"message": "Student Assignment Tracker API is running"}
+    return {
+        "message": "Student Assignment Tracker API is running"
+    }
 
 
 @app.get("/health")
@@ -59,6 +66,7 @@ def health_check():
     return {"status": "healthy"}
 
 
+# CREATE AND READ ALL ASSIGNMENTS
 @app.get("/assignments", response_model=list[Assignment])
 def list_assignments():
     return list(assignments.values())
@@ -71,40 +79,68 @@ def list_assignments():
 )
 def create_assignment(assignment: AssignmentCreate):
     assignment_id = str(uuid4())
+
     new_assignment = Assignment(
         id=assignment_id,
         **assignment.model_dump(),
     )
+
     assignments[assignment_id] = new_assignment
     return new_assignment
 
 
+# READ SINGLE ASSIGNMENT
 @app.get("/assignments/{assignment_id}", response_model=Assignment)
 def get_assignment(assignment_id: str):
     assignment = assignments.get(assignment_id)
+
     if assignment is None:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Assignment not found",
+        )
+
     return assignment
 
 
+# UPDATE ASSIGNMENT
 @app.put("/assignments/{assignment_id}", response_model=Assignment)
-def update_assignment(assignment_id: str, updates: AssignmentUpdate):
+def update_assignment(
+    assignment_id: str,
+    updates: AssignmentUpdate,
+):
     assignment = assignments.get(assignment_id)
+
     if assignment is None:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Assignment not found",
+        )
 
     updated_data = assignment.model_dump()
-    updated_data.update(updates.model_dump(exclude_unset=True))
+
+    updated_data.update(
+        updates.model_dump(exclude_unset=True)
+    )
 
     updated_assignment = Assignment(**updated_data)
+
     assignments[assignment_id] = updated_assignment
+
     return updated_assignment
 
 
+# DELETE ASSIGNMENT
 @app.delete("/assignments/{assignment_id}")
 def delete_assignment(assignment_id: str):
     if assignment_id not in assignments:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Assignment not found",
+        )
 
     del assignments[assignment_id]
-    return {"message": "Assignment deleted successfully"}
+
+    return {
+        "message": "Assignment deleted successfully"
+    }
