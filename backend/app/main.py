@@ -10,13 +10,8 @@ app = FastAPI(
     title="Student Assignment Tracker API",
     description="Backend API for Student Assignment Tracker",
     version="1.0.0",
-)
-
-# CORS configuration for Vercel and local development
-app = FastAPI(
-    title="Student Assignment Tracker API",
-    description="Backend API for Student Assignment Tracker",
-    version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # CORS configuration for Vercel and local development
