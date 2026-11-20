@@ -12,7 +12,10 @@ interface Assignment {
   status: Status
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/assignments`
+// In development, /api is proxied by Vite to FastAPI. In deployments, set
+// VITE_API_URL to the backend origin (for example, https://api.example.com).
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+const API_URL = `${API_BASE_URL}/assignments`
 
 const buttonClass =
   'rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700'

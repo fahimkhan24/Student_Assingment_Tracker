@@ -1,4 +1,36 @@
-# React + TypeScript + Vite
+# Student Assignment Tracker frontend
+
+## Run the app locally
+
+Start FastAPI in one terminal from the repository root:
+
+```powershell
+cd backend/app
+..\..\.venv\Scripts\python.exe -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+If the virtual environment is not at the repository root, activate the Python
+environment where `backend/app/requirements.txt` is installed, then run:
+
+```powershell
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, run the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend sends API requests to `/api`; Vite forwards them to FastAPI at
+`http://127.0.0.1:8000`. Set `VITE_BACKEND_URL` in a local `.env` file if the
+backend runs at a different address. For a deployed frontend, set
+`VITE_API_URL` to the backend origin so requests go directly to the deployed API.
+FastAPI's interactive API docs are at `http://127.0.0.1:8000/docs`.
+
+## Template notes
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
