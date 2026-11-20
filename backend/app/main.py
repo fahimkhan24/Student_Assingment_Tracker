@@ -1,9 +1,28 @@
 from uuid import uuid4
 from typing import Literal
 
-from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    HTTPException,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
+from .auth import get_current_user, require_role
+from .database import get_db
+from .models import User
+from .schemas import SignupRequest, LoginRequest, UserResponse
+from .security import hash_password, verify_password, create_access_token
+
+
+# ==================================================
+# FASTAPI APPLICATION
+# ==================================================
 
 app = FastAPI(
     title="Student Assignment Tracker API",
@@ -11,7 +30,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS configuration for Vercel and local development (localhost + 127.0.0.1)
+
+# ==================================================
+# CORS CONFIGURATION
+# ==================================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -30,7 +53,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Assignment status and priority options
+
+# ==================================================
+# ASSIGNMENT SCHEMAS
+# ==================================================
+
 AssignmentStatus = Literal["Pending", "In Progress", "Completed"]
 AssignmentPriority = Literal["Low", "Medium", "High"]
 
@@ -55,89 +82,296 @@ class AssignmentUpdate(BaseModel):
     status: AssignmentStatus | None = None
 
 
-# Temporary in-memory storage
+# ==================================================
+# TEMPORARY ASSIGNMENT STORAGE
+# ==================================================
+
 assignments: dict[str, Assignment] = {}
+
+
+# ==================================================
+# ROUTER
+# ==================================================
 
 router = APIRouter()
 
+
+# ==================================================
+# AUTHENTICATION - SIGNUP
+# ==================================================
+
+@router.post(
+    "/auth/signup",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def signup(
+    payload: SignupRequest,
+    db: Session = Depends(get_db),
+):
+    email = payload.email.lower().strip()
+
+    existing_user = db.query(User).filter(
+        User.email == email
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email is already registered",
+        )
+
+    new_user = User(
+        name=payload.name.strip(),
+        email=email,
+        hashed_password=hash_password(payload.password),
+        role=payload.role,
+    )
+
+    db.add(new_user)
+
+    try:
+        db.commit()
+        db.refresh(new_user)
+
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email is already registered",
+        )
+
+    return new_user
+
+
+# ==================================================
+# AUTHENTICATION - LOGIN
+# ==================================================
+
+@router.post("/auth/login")
+def login(
+    payload: LoginRequest,
+    db: Session = Depends(get_db),
+):
+    email = payload.email.lower().strip()
+
+    user = db.query(User).filter(
+        User.email == email
+    ).first()
+
+    if not user or not verify_password(
+        payload.password,
+        user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "role": user.role,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role,
+        },
+    }
+
+
+# ==================================================
+# AUTHENTICATION - CURRENT USER
+# ==================================================
+
+@router.get(
+    "/auth/me",
+    response_model=UserResponse,
+)
+def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+# ==================================================
+# TEACHER-ONLY TEST ENDPOINT
+# ==================================================
+
+@router.get("/auth/teacher-test")
+def teacher_test(
+    current_user: User = Depends(require_role("teacher")),
+):
+    return {
+        "message": "Teacher access granted",
+        "name": current_user.name,
+        "role": current_user.role,
+    }
+
+
+# ==================================================
+# HEALTH CHECK
+# ==================================================
 
 @router.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 
-# CREATE AND READ ALL ASSIGNMENTS
-@router.get("/assignments", response_model=list[Assignment])
-def list_assignments():
+# ==================================================
+# GET ALL ASSIGNMENTS
+# STUDENT + TEACHER
+# ==================================================
+
+@router.get(
+    "/assignments",
+    response_model=list[Assignment],
+)
+def list_assignments(
+    current_user: User = Depends(get_current_user),
+):
     return list(assignments.values())
 
+
+# ==================================================
+# CREATE ASSIGNMENT
+# TEACHER ONLY
+# ==================================================
 
 @router.post(
     "/assignments",
     response_model=Assignment,
     status_code=status.HTTP_201_CREATED,
 )
-def create_assignment(assignment: AssignmentCreate):
+def create_assignment(
+    assignment: AssignmentCreate,
+    current_user: User = Depends(require_role("teacher")),
+):
     assignment_id = str(uuid4())
+
     new_assignment = Assignment(
         id=assignment_id,
         **assignment.model_dump(),
     )
+
     assignments[assignment_id] = new_assignment
+
     return new_assignment
 
 
-# READ SINGLE ASSIGNMENT
-@router.get("/assignments/{assignment_id}", response_model=Assignment)
-def get_assignment(assignment_id: str):
+# ==================================================
+# GET SINGLE ASSIGNMENT
+# STUDENT + TEACHER
+# ==================================================
+
+@router.get(
+    "/assignments/{assignment_id}",
+    response_model=Assignment,
+)
+def get_assignment(
+    assignment_id: str,
+    current_user: User = Depends(get_current_user),
+):
     assignment = assignments.get(assignment_id)
+
     if assignment is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Assignment not found",
         )
+
     return assignment
 
 
+# ==================================================
 # UPDATE ASSIGNMENT
-@router.put("/assignments/{assignment_id}", response_model=Assignment)
+# TEACHER ONLY
+# ==================================================
+
+@router.put(
+    "/assignments/{assignment_id}",
+    response_model=Assignment,
+)
 def update_assignment(
     assignment_id: str,
     updates: AssignmentUpdate,
+    current_user: User = Depends(require_role("teacher")),
 ):
     assignment = assignments.get(assignment_id)
+
     if assignment is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Assignment not found",
         )
 
     updated_data = assignment.model_dump()
-    updated_data.update(updates.model_dump(exclude_unset=True))
+
+    updated_data.update(
+        updates.model_dump(exclude_unset=True)
+    )
 
     updated_assignment = Assignment(**updated_data)
+
     assignments[assignment_id] = updated_assignment
+
     return updated_assignment
 
 
+# ==================================================
 # DELETE ASSIGNMENT
+# TEACHER ONLY
+# ==================================================
+
 @router.delete("/assignments/{assignment_id}")
-def delete_assignment(assignment_id: str):
+def delete_assignment(
+    assignment_id: str,
+    current_user: User = Depends(require_role("teacher")),
+):
     if assignment_id not in assignments:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Assignment not found",
         )
 
     del assignments[assignment_id]
-    return {"message": "Assignment deleted successfully"}
 
+    return {
+        "message": "Assignment deleted successfully"
+    }
+
+
+# ==================================================
+# ROOT
+# ==================================================
 
 @app.get("/")
 def root():
-    return {"message": "Student Assignment Tracker API is running"}
+    return {
+        "message": "Student Assignment Tracker API is running"
+    }
 
 
-# Mount routes at both root (/assignments) and /api (/api/assignments)
+# ==================================================
+# REGISTER ROUTES
+# ==================================================
+
 app.include_router(router)
-app.include_router(router, prefix="/api", include_in_schema=False)
+
+app.include_router(
+    router,
+    prefix="/api",
+    include_in_schema=False,
+)
