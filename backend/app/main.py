@@ -1,3 +1,4 @@
+
 from uuid import uuid4
 from typing import Literal
 
@@ -9,13 +10,13 @@ from fastapi import (
     status,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from .auth import get_current_user, require_role
-from .database import get_db
-from .models import User
+from .database import get_db, init_db
+from .models import User, Assignment as AssignmentModel
 from .schemas import SignupRequest, LoginRequest, UserResponse
 from .security import hash_password, verify_password, create_access_token
 
@@ -29,6 +30,11 @@ app = FastAPI(
     description="Backend API for Student Assignment Tracker",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 
 # ==================================================
@@ -73,6 +79,8 @@ class AssignmentCreate(BaseModel):
 class Assignment(AssignmentCreate):
     id: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class AssignmentUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
@@ -80,13 +88,6 @@ class AssignmentUpdate(BaseModel):
     dueDate: str | None = None
     priority: AssignmentPriority | None = None
     status: AssignmentStatus | None = None
-
-
-# ==================================================
-# TEMPORARY ASSIGNMENT STORAGE
-# ==================================================
-
-assignments: dict[str, Assignment] = {}
 
 
 # ==================================================
@@ -200,10 +201,6 @@ def get_me(
     current_user: User = Depends(get_current_user),
 ):
     return current_user
-def get_me(
-    current_user: User = Depends(get_current_user),
-):
-    return current_user
 
 
 # ==================================================
@@ -241,8 +238,9 @@ def health_check():
 )
 def list_assignments(
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return list(assignments.values())
+    return db.query(AssignmentModel).all()
 
 
 # ==================================================
@@ -258,15 +256,16 @@ def list_assignments(
 def create_assignment(
     assignment: AssignmentCreate,
     current_user: User = Depends(require_role("teacher")),
+    db: Session = Depends(get_db),
 ):
-    assignment_id = str(uuid4())
-
-    new_assignment = Assignment(
-        id=assignment_id,
+    new_assignment = AssignmentModel(
+        id=str(uuid4()),
         **assignment.model_dump(),
     )
 
-    assignments[assignment_id] = new_assignment
+    db.add(new_assignment)
+    db.commit()
+    db.refresh(new_assignment)
 
     return new_assignment
 
@@ -283,8 +282,11 @@ def create_assignment(
 def get_assignment(
     assignment_id: str,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    assignment = assignments.get(assignment_id)
+    assignment = db.query(AssignmentModel).filter(
+        AssignmentModel.id == assignment_id
+    ).first()
 
     if assignment is None:
         raise HTTPException(
@@ -308,8 +310,11 @@ def update_assignment(
     assignment_id: str,
     updates: AssignmentUpdate,
     current_user: User = Depends(require_role("teacher")),
+    db: Session = Depends(get_db),
 ):
-    assignment = assignments.get(assignment_id)
+    assignment = db.query(AssignmentModel).filter(
+        AssignmentModel.id == assignment_id
+    ).first()
 
     if assignment is None:
         raise HTTPException(
@@ -317,17 +322,15 @@ def update_assignment(
             detail="Assignment not found",
         )
 
-    updated_data = assignment.model_dump()
+    updated_data = updates.model_dump(exclude_unset=True)
 
-    updated_data.update(
-        updates.model_dump(exclude_unset=True)
-    )
+    for field, value in updated_data.items():
+        setattr(assignment, field, value)
 
-    updated_assignment = Assignment(**updated_data)
+    db.commit()
+    db.refresh(assignment)
 
-    assignments[assignment_id] = updated_assignment
-
-    return updated_assignment
+    return assignment
 
 
 # ==================================================
@@ -339,14 +342,20 @@ def update_assignment(
 def delete_assignment(
     assignment_id: str,
     current_user: User = Depends(require_role("teacher")),
+    db: Session = Depends(get_db),
 ):
-    if assignment_id not in assignments:
+    assignment = db.query(AssignmentModel).filter(
+        AssignmentModel.id == assignment_id
+    ).first()
+
+    if assignment is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Assignment not found",
         )
 
-    del assignments[assignment_id]
+    db.delete(assignment)
+    db.commit()
 
     return {
         "message": "Assignment deleted successfully"

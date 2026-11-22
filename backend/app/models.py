@@ -21,3 +21,18 @@ class User(Base):
 
     role = Column(String(20), nullable=False)
 
+
+class Assignment(Base):
+    __tablename__ = "assignments"
+
+    id = Column(String(36), primary_key=True, index=True)
+
+    title = Column(String(200), nullable=False)
+
+    course = Column(String(100), nullable=False)
+
+    dueDate = Column(String(50), nullable=False)
+
+    priority = Column(String(20), nullable=False, default="Medium")
+
+    status = Column(String(20), nullable=False, default="Pending")
