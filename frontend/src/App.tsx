@@ -1,7 +1,18 @@
+
 import { useEffect, useState, type FormEvent } from 'react'
+import Login from './login'
+import Signup from './Signup'
 
 type Status = 'Pending' | 'In Progress' | 'Completed'
 type Priority = 'Low' | 'Medium' | 'High'
+type Role = 'student' | 'teacher'
+
+interface User {
+  id: number
+  name: string
+  email: string
+  role: Role
+}
 
 interface Assignment {
   id: string
@@ -12,8 +23,6 @@ interface Assignment {
   status: Status
 }
 
-// In development, /api is proxied by Vite to FastAPI. In deployments, set
-// VITE_API_URL to the backend origin (for example, https://api.example.com).
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 const API_URL = `${API_BASE_URL}/assignments`
 
@@ -26,6 +35,16 @@ const inputClass =
 const labelClass = 'flex flex-col gap-2 text-sm font-medium text-slate-600'
 
 function App() {
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token'),
+  )
+
+  const [user, setUser] = useState<User | null>(
+    JSON.parse(localStorage.getItem('user') || 'null'),
+  )
+
+  const [authPage, setAuthPage] = useState<'login' | 'signup'>('login')
+
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('All')
@@ -40,11 +59,53 @@ function App() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // Load assignments from FastAPI when the page opens.
+  const isTeacher = user?.role === 'teacher'
+
+  // Login and logout
+  function handleLogin(newToken: string, newUser: User) {
+    localStorage.setItem('token', newToken)
+    localStorage.setItem('user', JSON.stringify(newUser))
+    setToken(newToken)
+    setUser(newUser)
+    setAuthPage('login')
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+
+    setToken(null)
+    setUser(null)
+    setAssignments([])
+    setShowForm(false)
+    setError('')
+    setLoading(false)
+    setAuthPage('login')
+  }
+
+  // Load assignments after authentication.
   useEffect(() => {
     async function loadAssignments() {
+      if (!token) {
+        setAssignments([])
+        setLoading(false)
+        return
+      }
+
+      setLoading(true)
+      setError('')
+
       try {
-        const response = await fetch(API_URL)
+        const response = await fetch(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (response.status === 401) {
+          handleLogout()
+          return
+        }
 
         if (!response.ok) {
           throw new Error('Failed to load assignments')
@@ -52,10 +113,9 @@ function App() {
 
         const data: Assignment[] = await response.json()
         setAssignments(data)
-        setError('')
       } catch {
         setError(
-          'Could not connect to the backend. Make sure FastAPI is running.',
+          'Could not load assignments. Check your backend connection.',
         )
       } finally {
         setLoading(false)
@@ -63,9 +123,9 @@ function App() {
     }
 
     loadAssignments()
-  }, [])
+  }, [token])
 
-  // Search and filter assignments.
+  // Search and filter
   const visibleAssignments = assignments.filter((assignment) => {
     const matchesSearch =
       assignment.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -74,7 +134,7 @@ function App() {
     return matchesSearch && (filter === 'All' || assignment.status === filter)
   })
 
-  // Dashboard statistics.
+  // Dashboard statistics
   const pending = assignments.filter(
     (assignment) => assignment.status === 'Pending',
   ).length
@@ -87,7 +147,7 @@ function App() {
     (assignment) => assignment.status === 'Completed',
   ).length
 
-  // Create an assignment using the backend API.
+  // Create assignment (Teacher only)
   async function addAssignment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
@@ -98,6 +158,7 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: title.trim(),
@@ -107,6 +168,11 @@ function App() {
           status: 'Pending',
         }),
       })
+
+      if (response.status === 401) {
+        handleLogout()
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to create assignment')
@@ -121,15 +187,13 @@ function App() {
       setPriority('Medium')
       setShowForm(false)
     } catch {
-      setError(
-        'Could not create assignment. Check the backend and make sure all fields are valid.',
-      )
+      setError('Could not create assignment. Please try again.')
     } finally {
       setSaving(false)
     }
   }
 
-  // Update assignment status using the backend API.
+  // Update assignment status (Teacher only)
   async function updateStatus(id: string, status: Status) {
     setError('')
 
@@ -138,9 +202,15 @@ function App() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
       })
+
+      if (response.status === 401) {
+        handleLogout()
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to update assignment')
@@ -156,14 +226,22 @@ function App() {
     }
   }
 
-  // Delete an assignment using the backend API.
+  // Delete assignment (Teacher only)
   async function deleteAssignment(id: string) {
     setError('')
 
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
+
+      if (response.status === 401) {
+        handleLogout()
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to delete assignment')
@@ -177,7 +255,7 @@ function App() {
     }
   }
 
-  // Style status and priority badges.
+  // Status and priority badge styles
   function badgeClass(value: Priority | Status) {
     const styles: Record<Priority | Status, string> = {
       High: 'bg-red-50 text-red-700',
@@ -191,9 +269,42 @@ function App() {
     return `inline-flex rounded-md px-2.5 py-1.5 text-xs font-semibold ${styles[value]}`
   }
 
+  // Authentication screens
+  if (!token || !user) {
+    if (authPage === 'signup') {
+      return (
+        <Signup
+          onSignup={() => setAuthPage('login')}
+          onSwitchLogin={() => setAuthPage('login')}
+        />
+      )
+    }
+
+    return (
+      <div>
+        <Login onLogin={handleLogin} />
+
+        <div className="fixed bottom-6 left-0 right-0 text-center">
+          <p className="text-sm text-slate-500">
+            Don't have an account?{' '}
+            <button
+              type="button"
+              onClick={() => setAuthPage('signup')}
+              className="font-semibold text-indigo-600 hover:text-indigo-700"
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Dashboard
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <div className="flex min-h-screen">
+
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white p-6 md:flex md:flex-col">
           <div className="mb-10 flex items-center gap-3">
@@ -202,7 +313,9 @@ function App() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-900">StudyTrack</h1>
-              <p className="text-xs text-slate-500">Student Assignment Tracker</p>
+              <p className="text-xs text-slate-500">
+                Student Assignment Tracker
+              </p>
             </div>
           </div>
 
@@ -211,6 +324,7 @@ function App() {
               <span>▦</span>
               Dashboard
             </div>
+
             <div className="flex items-center gap-3 rounded-lg px-4 py-3 text-slate-500">
               <span>✓</span>
               My Assignments
@@ -231,7 +345,9 @@ function App() {
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
           <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <p className="mb-1 text-sm text-slate-500">Workspace / Dashboard</p>
+              <p className="mb-1 text-sm text-slate-500">
+                Workspace / Dashboard
+              </p>
               <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                 Assignment Dashboard
               </h2>
@@ -240,22 +356,42 @@ function App() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() => setShowForm((current) => !current)}
-            >
-              {showForm ? 'Cancel' : '+ Add Assignment'}
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm">
+                <span className="font-semibold">{user.name}</span>
+                <span className="ml-2 rounded bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700">
+                  {user.role}
+                </span>
+              </div>
+
+              {isTeacher && (
+                <button
+                  type="button"
+                  className={buttonClass}
+                  onClick={() => setShowForm((current) => !current)}
+                >
+                  {showForm ? 'Cancel' : '+ Add Assignment'}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+              >
+                Logout
+              </button>
+            </div>
           </header>
 
-          {/* Loading and error messages */}
+          {/* Loading */}
           {loading && (
             <p className="mb-5 rounded-lg bg-white p-4 text-sm text-slate-500">
               Loading assignments...
             </p>
           )}
 
+          {/* Error */}
           {error && (
             <div
               role="alert"
@@ -306,7 +442,7 @@ function App() {
           </section>
 
           {/* Add assignment form */}
-          {showForm && (
+          {showForm && isTeacher && (
             <section className="mb-8 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <h3 className="mb-5 text-lg font-bold text-slate-900">
                 Add New Assignment
@@ -389,7 +525,9 @@ function App() {
                   My Assignments
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  View and manage your coursework.
+                  {isTeacher
+                    ? 'View and manage coursework.'
+                    : 'View your coursework and track progress.'}
                 </p>
               </div>
 
@@ -426,7 +564,9 @@ function App() {
                     <th className="px-5 py-4 font-semibold">Due Date</th>
                     <th className="px-5 py-4 font-semibold">Priority</th>
                     <th className="px-5 py-4 font-semibold">Status</th>
-                    <th className="px-5 py-4 font-semibold">Actions</th>
+                    {isTeacher && (
+                      <th className="px-5 py-4 font-semibold">Actions</th>
+                    )}
                   </tr>
                 </thead>
 
@@ -452,44 +592,52 @@ function App() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <select
-                          className={`${badgeClass(assignment.status)} cursor-pointer border-0 outline-none`}
-                          value={assignment.status}
-                          onChange={(event) =>
-                            updateStatus(
-                              assignment.id,
-                              event.target.value as Status,
-                            )
-                          }
-                          aria-label={`Status for ${assignment.title}`}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Completed">Completed</option>
-                        </select>
+                        {isTeacher ? (
+                          <select
+                            className={`${badgeClass(assignment.status)} cursor-pointer border-0 outline-none`}
+                            value={assignment.status}
+                            onChange={(event) =>
+                              updateStatus(
+                                assignment.id,
+                                event.target.value as Status,
+                              )
+                            }
+                            aria-label={`Status for ${assignment.title}`}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                        ) : (
+                          <span className={badgeClass(assignment.status)}>
+                            {assignment.status}
+                          </span>
+                        )}
                       </td>
 
-                      <td className="px-5 py-4">
-                        <button
-                          type="button"
-                          className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                          onClick={() => deleteAssignment(assignment.id)}
-                          aria-label={`Delete ${assignment.title}`}
-                        >
-                          Delete
-                        </button>
-                      </td>
+                      {isTeacher && (
+                        <td className="px-5 py-4">
+                          <button
+                            type="button"
+                            className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                            onClick={() => deleteAssignment(assignment.id)}
+                            aria-label={`Delete ${assignment.title}`}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
 
                   {!loading && visibleAssignments.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={isTeacher ? 6 : 5}
                         className="px-5 py-12 text-center text-slate-500"
                       >
                         {assignments.length === 0
-                          ? 'No assignments yet. Click “Add Assignment” to create one.'
+                          ? 'No assignments available.'
                           : 'No assignments match your search or filter.'}
                       </td>
                     </tr>
@@ -499,8 +647,7 @@ function App() {
             </div>
 
             <div className="border-t border-slate-200 px-5 py-4 text-xs text-slate-500">
-              Showing {visibleAssignments.length} of {assignments.length}{' '}
-              assignments
+              Showing {visibleAssignments.length} of {assignments.length} assignments
             </div>
           </section>
 
