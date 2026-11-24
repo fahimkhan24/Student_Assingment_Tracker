@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from .database import Base
 
 
@@ -19,7 +19,11 @@ class User(Base):
 
     hashed_password = Column(String(255), nullable=False)
 
-    role = Column(String(20), nullable=False)
+    # Supported roles: student, teacher, admin
+    role = Column(String(20), nullable=False, default="student")
+
+    # Admin can ban or unban accounts
+    is_active = Column(Boolean, default=True, nullable=False)
 
 
 class Assignment(Base):

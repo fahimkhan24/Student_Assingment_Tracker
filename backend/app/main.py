@@ -3,18 +3,17 @@ from uuid import uuid4
 from typing import Literal
 
 from fastapi import (
-    APIRouter,
     Depends,
     FastAPI,
     HTTPException,
     status,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from .auth import get_current_user, require_role
+from .auth import get_current_user, require_role, require_admin
 from .database import get_db, init_db
 from .models import User, Assignment as AssignmentModel
 from .schemas import SignupRequest, LoginRequest, UserResponse
@@ -76,8 +75,13 @@ class AssignmentCreate(BaseModel):
     status: AssignmentStatus = "Pending"
 
 
-class Assignment(AssignmentCreate):
+class Assignment(BaseModel):
     id: str
+    title: str
+    course: str
+    dueDate: str
+    priority: AssignmentPriority
+    status: AssignmentStatus
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -91,17 +95,25 @@ class AssignmentUpdate(BaseModel):
 
 
 # ==================================================
-# ROUTER
+# ADMIN SCHEMAS
 # ==================================================
 
-router = APIRouter()
+class AdminUserCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    role: Literal["student", "teacher"] = "student"
+
+
+class AdminUserResponse(UserResponse):
+    is_active: bool
 
 
 # ==================================================
 # AUTHENTICATION - SIGNUP
 # ==================================================
 
-@router.post(
+@app.post(
     "/auth/signup",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
@@ -118,7 +130,7 @@ def signup(
 
     if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=409,
             detail="Email is already registered",
         )
 
@@ -126,7 +138,8 @@ def signup(
         name=payload.name.strip(),
         email=email,
         hashed_password=hash_password(payload.password),
-        role=payload.role,
+        role="student",
+        is_active=True,
     )
 
     db.add(new_user)
@@ -134,12 +147,10 @@ def signup(
     try:
         db.commit()
         db.refresh(new_user)
-
     except IntegrityError:
         db.rollback()
-
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=409,
             detail="Email is already registered",
         )
 
@@ -150,7 +161,7 @@ def signup(
 # AUTHENTICATION - LOGIN
 # ==================================================
 
-@router.post("/auth/login")
+@app.post("/auth/login")
 def login(
     payload: LoginRequest,
     db: Session = Depends(get_db),
@@ -166,8 +177,14 @@ def login(
         user.hashed_password,
     ):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Invalid email or password",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="Your account has been banned or deactivated",
         )
 
     access_token = create_access_token(
@@ -190,13 +207,10 @@ def login(
 
 
 # ==================================================
-# AUTHENTICATION - CURRENT USER
+# CURRENT USER
 # ==================================================
 
-@router.get(
-    "/auth/me",
-    response_model=UserResponse,
-)
+@app.get("/auth/me", response_model=UserResponse)
 def get_me(
     current_user: User = Depends(get_current_user),
 ):
@@ -204,10 +218,10 @@ def get_me(
 
 
 # ==================================================
-# TEACHER-ONLY TEST ENDPOINT
+# TEACHER TEST
 # ==================================================
 
-@router.get("/auth/teacher-test")
+@app.get("/auth/teacher-test")
 def teacher_test(
     current_user: User = Depends(require_role("teacher")),
 ):
@@ -219,23 +233,190 @@ def teacher_test(
 
 
 # ==================================================
+# ADMIN - VIEW ALL USERS
+# ==================================================
+
+@app.get(
+    "/admin/users",
+    response_model=list[AdminUserResponse],
+)
+def get_all_users(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return db.query(User).order_by(User.id).all()
+
+
+# ==================================================
+# ADMIN - CREATE USER
+# ==================================================
+
+@app.post(
+    "/admin/users",
+    response_model=AdminUserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_user(
+    payload: AdminUserCreate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    email = payload.email.lower().strip()
+
+    existing_user = db.query(User).filter(
+        User.email == email
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=409,
+            detail="Email is already registered",
+        )
+
+    new_user = User(
+        name=payload.name.strip(),
+        email=email,
+        hashed_password=hash_password(payload.password),
+        role=payload.role,
+        is_active=True,
+    )
+
+    db.add(new_user)
+
+    try:
+        db.commit()
+        db.refresh(new_user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Email is already registered",
+        )
+
+    return new_user
+
+
+# ==================================================
+# ADMIN - BAN USER
+# ==================================================
+
+@app.patch("/admin/users/{user_id}/ban")
+def ban_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot ban your own account",
+        )
+
+    if user.role == "admin" and user.is_active:
+        active_admins = db.query(User).filter(
+            User.role == "admin",
+            User.is_active.is_(True),
+        ).count()
+
+        if active_admins <= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot ban the last active admin",
+            )
+
+    user.is_active = False
+    db.commit()
+
+    return {"message": "User banned successfully"}
+
+
+# ==================================================
+# ADMIN - UNBAN USER
+# ==================================================
+
+@app.patch("/admin/users/{user_id}/unban")
+def unban_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    user.is_active = True
+    db.commit()
+
+    return {"message": "User unbanned successfully"}
+
+
+# ==================================================
+# ADMIN - DELETE USER
+# ==================================================
+
+@app.delete("/admin/users/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot delete your own account",
+        )
+
+    if user.role == "admin":
+        admin_count = db.query(User).filter(
+            User.role == "admin"
+        ).count()
+
+        if admin_count <= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete the last admin",
+            )
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": "User deleted successfully"}
+
+
+# ==================================================
 # HEALTH CHECK
 # ==================================================
 
-@router.get("/health")
+@app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 
 # ==================================================
-# GET ALL ASSIGNMENTS
-# STUDENT + TEACHER
+# ASSIGNMENTS - VIEW ALL
 # ==================================================
 
-@router.get(
-    "/assignments",
-    response_model=list[Assignment],
-)
+@app.get("/assignments", response_model=list[Assignment])
 def list_assignments(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -244,11 +425,10 @@ def list_assignments(
 
 
 # ==================================================
-# CREATE ASSIGNMENT
-# TEACHER ONLY
+# ASSIGNMENTS - CREATE (TEACHER ONLY)
 # ==================================================
 
-@router.post(
+@app.post(
     "/assignments",
     response_model=Assignment,
     status_code=status.HTTP_201_CREATED,
@@ -271,11 +451,10 @@ def create_assignment(
 
 
 # ==================================================
-# GET SINGLE ASSIGNMENT
-# STUDENT + TEACHER
+# ASSIGNMENTS - VIEW SINGLE
 # ==================================================
 
-@router.get(
+@app.get(
     "/assignments/{assignment_id}",
     response_model=Assignment,
 )
@@ -290,7 +469,7 @@ def get_assignment(
 
     if assignment is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Assignment not found",
         )
 
@@ -298,11 +477,10 @@ def get_assignment(
 
 
 # ==================================================
-# UPDATE ASSIGNMENT
-# TEACHER ONLY
+# ASSIGNMENTS - UPDATE (TEACHER ONLY)
 # ==================================================
 
-@router.put(
+@app.put(
     "/assignments/{assignment_id}",
     response_model=Assignment,
 )
@@ -318,7 +496,7 @@ def update_assignment(
 
     if assignment is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Assignment not found",
         )
 
@@ -334,11 +512,10 @@ def update_assignment(
 
 
 # ==================================================
-# DELETE ASSIGNMENT
-# TEACHER ONLY
+# ASSIGNMENTS - DELETE (TEACHER ONLY)
 # ==================================================
 
-@router.delete("/assignments/{assignment_id}")
+@app.delete("/assignments/{assignment_id}")
 def delete_assignment(
     assignment_id: str,
     current_user: User = Depends(require_role("teacher")),
@@ -350,16 +527,14 @@ def delete_assignment(
 
     if assignment is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Assignment not found",
         )
 
     db.delete(assignment)
     db.commit()
 
-    return {
-        "message": "Assignment deleted successfully"
-    }
+    return {"message": "Assignment deleted successfully"}
 
 
 # ==================================================
@@ -371,16 +546,3 @@ def root():
     return {
         "message": "Student Assignment Tracker API is running"
     }
-
-
-# ==================================================
-# REGISTER ROUTES
-# ==================================================
-
-app.include_router(router)
-
-app.include_router(
-    router,
-    prefix="/api",
-    include_in_schema=False,
-)

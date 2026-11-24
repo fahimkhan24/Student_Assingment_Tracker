@@ -1,20 +1,23 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
+
+
+UserRole = Literal["student", "teacher", "admin"]
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-
-UserRole = Literal["student", "teacher"]
 
 
 class SignupRequest(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    role: UserRole
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserResponse(BaseModel):
@@ -23,9 +26,4 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: UserRole
 
-    model_config = {"from_attributes": True}
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    model_config = ConfigDict(from_attributes=True)

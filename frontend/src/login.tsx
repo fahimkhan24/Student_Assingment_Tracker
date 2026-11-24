@@ -1,15 +1,17 @@
 
 import { useState, type FormEvent } from 'react'
 
-interface LoginProps {
-  onLogin: (token: string, user: User) => void
-}
+type Role = 'student' | 'teacher' | 'admin'
 
 interface User {
   id: number
   name: string
   email: string
-  role: 'student' | 'teacher'
+  role: Role
+}
+
+interface LoginProps {
+  onLogin: (token: string, user: User) => void
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -24,16 +26,17 @@ export default function Login({ onLogin }: LoginProps) {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/auth/login`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
+      const API_URL = (
+        import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      ).replace(/\/$/, '')
+
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
+        body: JSON.stringify({ email, password }),
+      })
 
       const data = await response.json()
 

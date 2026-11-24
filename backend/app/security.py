@@ -1,10 +1,25 @@
-from pwdlib import PasswordHash
-import jwt
+
+import os
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
+
+import jwt
+from dotenv import load_dotenv
+from pwdlib import PasswordHash
+
+# Load the .env file from the backend directory
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BACKEND_DIR / ".env")
 
 password_hash = PasswordHash.recommended()
 
-SECRET_KEY = "dev-secret-key-change-later"
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not configured."
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

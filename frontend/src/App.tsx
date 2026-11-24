@@ -2,10 +2,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import Login from './login'
 import Signup from './Signup'
+import AdminDashboard from './AdminDashboard'
 
 type Status = 'Pending' | 'In Progress' | 'Completed'
 type Priority = 'Low' | 'Medium' | 'High'
-type Role = 'student' | 'teacher'
+type Role = 'student' | 'teacher' | 'admin'
 
 interface User {
   id: number
@@ -301,6 +302,16 @@ function App() {
   }
 
   // Dashboard
+  // Admin Dashboard
+if (user.role === 'admin') {
+  return (
+    <AdminDashboard
+      token={token}
+      user={user}
+      onLogout={handleLogout}
+    />
+  )
+}
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <div className="flex min-h-screen">
