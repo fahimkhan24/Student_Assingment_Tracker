@@ -29,7 +29,18 @@ app = FastAPI(
     description="Backend API for Student Assignment Tracker",
     version="1.0.0",
 )
+from fastapi.middleware.cors import CORSMiddleware
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://student-assingment-tracker.vercel.app",
+        "https://student-assingment-tracker-bxot05d7f-fahimkhan24.vercel.app",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup():
