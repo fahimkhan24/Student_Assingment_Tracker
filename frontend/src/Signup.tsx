@@ -6,11 +6,14 @@ interface SignupProps {
   onSwitchLogin: () => void
 }
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8000'
+).replace(/\/$/, '')
+
 export default function Signup({ onSignup, onSwitchLogin }: SignupProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<'student' | 'teacher'>('student')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -20,21 +23,28 @@ export default function Signup({ onSignup, onSwitchLogin }: SignupProps) {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/auth/signup`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name, email, password, role }),
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        }),
+      })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Signup failed')
+        const message = Array.isArray(data.detail)
+          ? data.detail.map((item: { msg?: string }) => item.msg).join(', ')
+          : typeof data.detail === 'string'
+            ? data.detail
+            : 'Signup failed. Please check your information.'
+
+        throw new Error(message)
       }
 
       onSignup()
@@ -58,7 +68,7 @@ export default function Signup({ onSignup, onSwitchLogin }: SignupProps) {
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Create your account
+            Create your student account
           </p>
         </div>
 
@@ -71,6 +81,8 @@ export default function Signup({ onSignup, onSwitchLogin }: SignupProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
+              minLength={2}
+              maxLength={100}
               required
             />
           </label>
@@ -96,21 +108,14 @@ export default function Signup({ onSignup, onSwitchLogin }: SignupProps) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
               minLength={8}
+              maxLength={128}
               required
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-slate-600">
-            Role
-            <select
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 outline-none focus:border-indigo-500"
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'student' | 'teacher')}
-            >
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
-            </select>
-          </label>
+          <p className="text-xs text-slate-500">
+            New accounts are registered with the Student role.
+          </p>
 
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
