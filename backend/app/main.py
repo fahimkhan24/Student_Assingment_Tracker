@@ -20,6 +20,7 @@ from .schemas import SignupRequest, LoginRequest, UserResponse
 from .security import hash_password, verify_password, create_access_token
 
 
+
 # ==================================================
 # FASTAPI APPLICATION
 # ==================================================
@@ -29,23 +30,6 @@ app = FastAPI(
     description="Backend API for Student Assignment Tracker",
     version="1.0.0",
 )
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://student-assingment-tracker.vercel.app",
-        "https://student-assingment-tracker-bxot05d7f-fahimkhan24.vercel.app",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("startup")
-def startup():
-    init_db()
-
 
 # ==================================================
 # CORS CONFIGURATION
@@ -55,6 +39,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://student-assingment-tracker.vercel.app",
+        "https://student-assingment-tracker-bxot05d7f-fahimkhan24.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",
@@ -68,6 +53,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 
 # ==================================================
