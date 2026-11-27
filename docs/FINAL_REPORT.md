@@ -3,13 +3,11 @@ CSE309 Web Application & Internet
 
 
 Final Project Submission Report
+
 Submitted by:
 Name: Muhammad Sanowarul Islam Fahim
-
 Student ID: 2420864
-
 Section: 05
-
 Team Number: Own
 
 
