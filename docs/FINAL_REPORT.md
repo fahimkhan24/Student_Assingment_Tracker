@@ -18,9 +18,9 @@ Independent University, Bangladesh
 
 Vercel Frontend: https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/
 GitHub Repository:
-https://github.com/fahimkhan24/Student_Assingment_Tracker\
+https://github.com/fahimkhan24/Student_Assingment_Tracker
 Backend Health Check:
-https://student-assingment-tracker.onrender.com/health\
+https://student-assingment-tracker.onrender.com/health
 API Documentation:
 https://student-assingment-tracker.onrender.com/docs
 Date of Submission: 28-11-2026
