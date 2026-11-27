@@ -1,419 +1,1300 @@
 <p align="center">
 
-# Independent University, Bangladesh
+**INDEPENDENT UNIVERSITY, BANGLADESH**  
+**Department of Computer Science & Engineering**  
+**CSE309 – Web Application & Internet**
 
-### CSE309 Web Application & Internet
+# FINAL PROJECT SUBMISSION REPORT
 
-<br><br>
+## Student Assignment Tracker
 
-# Final Project Submission Report
-
-<br><br>
-
-**Submitted by:**
-
-**Name:** Muhammad Sanowarul Islam Fahim
-
+**Submitted by:** Muhammad Sanowarul Islam Fahim  
 **Student ID:** 2420864
-
-**Section:** 05
-
+**Section:** 05 
 **Team Number:** Individual Project
 
-<br>
+**Project Title:** Student Assignment Tracker  
+**Vercel URL:** https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/  
+**GitHub Repository:** https://github.com/fahimkhan24/Student_Assingment_Tracker
 
-**Project Title:** Student Assignment Tracker
-
-**Vercel URL:** https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app
-
-**GitHub Repository:** 
-https://github.com/fahimkhan24/Student_Assingment_Tracker
-
-<br><br>
-
-**Submitted To:**
-
-Sayef Reyadh
-
-Adjunct Lecturer
-
-Department of Computer Science & Engineering
-
+**Submitted To:**  
+**Sayef Reyadh**  
+Adjunct Lecturer  
+Department of Computer Science & Engineering  
 Independent University, Bangladesh
 
-<br>
-
-**Semester:** Autumn 2026
-
-**Date of Submission:** 27 November 2026
+**Semester:** Autumn 2026  
+**Date of Submission:** 28 November 2026
 
 </p>
-Table of Contents
-1. Executive Summary
-2. Part A -- Product Requirements (PRD)
-3. Part B -- Software Requirements (SRS)
-4. Part C -- Technical Design (TDD)
-5. Part D -- Evidence: Screenshots of the Running Application
-6. Part E -- Project Management and Conclusion
-7. Appendix -- Final Verification Checklist
-8. Executive Summary 1.1 Project Overview Student Assignment Tracker is a web application designed to help students view and track academic assignments and allow teachers to manage assignment records. The application provides authentication and role-based access so that students have read-only access to assignments, while teachers can create, update, and delete assignment records. An administrator can manage user accounts, including creating student and teacher accounts, banning or unbanning users, and deleting users.
-Technology stack: React with TypeScript and Vite, Tailwind CSS, FastAPI (Python), SQLAlchemy, PostgreSQL hosted by Supabase, and deployment through Vercel (frontend) and Render (backend). 1.2 What Was Built
-- User signup and login using a password-hashing mechanism and JWT-based authentication.
-- A protected current-user endpoint (/auth/me) used to retrieve the authenticated user's account information.
-- Three application roles: student, teacher, and admin.
-- Server-side role checks for protected operations.
-- Student access to view assignment records without teacher editing controls.
-- Teacher access to create, update, and delete assignment records.
-- An administrator interface for listing users, creating student and teacher accounts, banning/unbanning accounts, and deleting accounts.
-- Persistent database configuration using SQLAlchemy and Supabase PostgreSQL for the deployed backend.
-- Separate frontend and backend deployments using Vercel and Render. Not claimed as completed: refresh-token rotation, logout/session revocation, session listing, audit logging, brute-force lockout, group membership/permissions, CSV exports, content moderation, and automated security test coverage were not established in the development information available for this report. They are listed as limitations or future work unless verified and implemented before submission. 1.3 Live Links Resource Link GitHub repository https://github.com/fahimkhan24/Student_Assingment_Tracker
-  Production frontend https://student-assingment-tracker.vercel.app/
-  Backend health check https://student-assingment-tracker.onrender.com/health
-  FastAPI interactive documentation https://student-assingment-tracker.onrender.com/docs Video demonstration (Add video link if available) Part A. Product Requirements (PRD) A1. Problem Statement Students receive assignments from different courses and need to keep track of assignment titles, course names, due dates, priorities, and completion status. When this information is kept in separate messages, documents, or personal notes, it can become difficult to find the latest information and remember upcoming work.
-Teachers also need a consistent way to create and maintain assignment information for students. Without a shared application, assignment information may be updated in one place but remain outdated elsewhere. A role-aware assignment tracking application can provide a central place for assignment information and distinguish student viewing privileges from teacher management privileges. A2. Users and Roles Role Who they are Main tasks Actions they must not be able to perform Visitor A person who has Open the Access protected not logged in application and assignment or use the administration signup/login operations screens
 
-Student An authenticated View assignment Create, update, or student information and delete assignment track assignment records; access status where admin enabled by the user-management application functions
+---
 
-Teacher An authenticated Create, view, Manage administrator teacher update, and accounts or use delete assignment administrator-only records user-management functions Admin An authorized View users; Publicly register as administrator create an admin or bypass student/teacher server-side accounts; ban, protections unban, and delete users A3. Goals and Success Measures ID Goal Success measure G-01 Provide account A valid student signup registration and login and login complete successfully
+> **Important:** This report preserves the original template's Part A–E structure, headings, and requirement categories. It describes the implementation established during development. Features marked **Not implemented / Not verified** must not be presented as completed. Fill in personal details, add real screenshots, verify test results, and insert actual GitHub issue/PR links before submission.
 
-G-02 Enforce role-based Student requests to access teacher-only write operations are denied by the backend
+# Table of Contents
 
-G-03 Support assignment A teacher can create, management read, update, and delete an assignment
+- [1. Executive Summary](#1-executive-summary)
+- [Part A. Product Requirements (PRD)](#part-a-product-requirements-prd)
+- [Part B. Software Requirements (SRS)](#part-b-software-requirements-srs)
+- [Part C. Technical Design (TDD)](#part-c-technical-design-tdd)
+- [Part D. Evidence: Screenshots of the Running Application](#part-d-evidence-screenshots-of-the-running-application)
+- [Part E. Project Management and Conclusion](#part-e-project-management-and-conclusion)
+- [Appendix. Test Accounts and Video Demo](#appendix-test-accounts-and-video-demo)
 
-G-04 Provide administrator An admin can list users user management and perform the implemented account-management actions
+# 1. Executive Summary
 
-G-05 Persist production A newly created account records or assignment remains available after a backend restart, verified against Supabase G-06 Deploy the application The production frontend loads and the backend health endpoint returns a healthy response A4. Scope and Non-Goals In scope
+## 1.1 Project overview
+
+**Student Assignment Tracker** is a web application that helps students view and track academic assignments and allows teachers to manage assignment information. Assignment records contain a title, course, due date, priority, and status. The application provides signup, login, JWT-based authentication, and role-based access control for students, teachers, and administrators.
+
+The frontend is developed with React and TypeScript. The backend uses Python and FastAPI. SQLAlchemy handles database operations, and the deployed application uses Supabase PostgreSQL for persistent storage. The frontend is hosted on Vercel and the backend on Render.
+
+**Technology stack:** React + TypeScript + Vite + Tailwind CSS | Python + FastAPI | SQLAlchemy | Supabase PostgreSQL | Vercel | Render.
+
+## 1.2 What was built since the mid assessment
+
+- **JWT authentication:** Signup and login were implemented. The backend verifies passwords and issues a signed JWT after successful login. Refresh-token rotation, logout revocation, and session management have not been verified.
+- **Role-based access control:** The application supports `student`, `teacher`, and `admin`. Backend role checks protect teacher and admin operations. Group permissions and detailed record-ownership rules have not been verified.
+- **Admin dashboard:** The admin interface supports user listing, creating student/teacher accounts, banning/unbanning users, and deleting users. Activity logs, security analytics, bulk moderation, and CSV exports have not been verified.
+- **Deployment:** The frontend was deployed to Vercel, the FastAPI backend to Render, and the production database was configured with Supabase PostgreSQL. Audit logging and brute-force protection have not been verified.
+
+## 1.3 Live links
+
+**Table 1: Project links**
+
+| Resource | Link |
+|---|---|
+| GitHub repository | [Student_Assingment_Tracker](https://github.com/fahimkhan24/Student_Assingment_Tracker) |
+| Vercel frontend | [Open application](https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/) |
+| Render API | [Backend service](https://student-assingment-tracker.onrender.com/) |
+| API health check | [Health endpoint](https://student-assingment-tracker.onrender.com/health) |
+| API documentation | [FastAPI Swagger UI](https://student-assingment-tracker.onrender.com/docs) |
+| Video demo | [Add 5–8 minute video link](#) |
+
+Never include test-account passwords, JWTs, secret keys, or database connection strings in this Markdown file or anywhere in the GitHub repository.
+
+---
+
+# Part A. Product Requirements (PRD)
+
+## A1. Problem Statement
+
+Students receive assignments from different courses and need to remember assignment titles, course names, deadlines, priorities, and completion status. When this information is kept in different messages, documents, or personal notes, it can become difficult to track deadlines and identify which assignments are still pending.
+
+Teachers also need a consistent way to create and maintain assignment information for students. If assignment details are communicated in different places, students may not always have the latest information. A centralized application can make assignment information easier to access and manage.
+
+## A2. Users and Roles
+
+**Table 2: Users and roles**
+
+| Role | Who they are | Main tasks | What they must never be able to do |
+|---|---|---|---|
+| Visitor | Person not logged in | Open the application, signup, login | Access protected assignment or admin operations |
+| Student | Authenticated student | View assignments and track their status | Create/update/delete assignments or use admin functions |
+| Teacher | Authenticated teacher | Create, view, update, and delete assignments | Use admin-only user-management functions |
+| Admin | Authorized administrator | List users, create student/teacher accounts, ban/unban and delete users | Grant privileges through public signup or bypass backend checks |
+| Group member/owner | Not part of verified implementation | Not applicable | Group actions are unavailable |
+
+The current project has three verified application roles: student, teacher, and admin. Group membership and group-owner permissions are not implemented or verified.
+
+## A3. Goals and Success Measures
+
+**Table 3: Goals and measures**
+
+| ID | Goal | Success measure |
+|---|---|---|
+| G-01 | User registration | Valid signup creates a student account |
+| G-02 | Authentication | Valid login returns an authentication token |
+| G-03 | Role authorization | Student cannot perform teacher-only write operations |
+| G-04 | Assignment management | Teacher can create, read, update, and delete assignments |
+| G-05 | Admin management | Admin can list and manage user accounts using implemented actions |
+| G-06 | Password protection | Passwords are stored as hashes, not plaintext |
+| G-07 | Data persistence | Test record remains after backend restart, verified against PostgreSQL |
+| G-08 | Deployment | Frontend loads and backend health endpoint responds |
+
+Token revocation, brute-force lockout, ownership isolation, and group permissions require additional implementation or tests before they can be claimed.
+
+## A4. Scope and Non-Goals
+
+### In scope
+
 - Student signup and login.
-- JWT-based authentication.
-- Password hashing.
+- Password hashing and JWT authentication.
 - Student, teacher, and admin roles.
-- Backend authorization checks.
-- Assignment CRUD operations.
-- Admin user listing and account management.
+- Backend authentication and role checks.
+- Assignment title, course, due date, priority, and status.
+- Teacher assignment CRUD.
+- Student assignment read access.
+- Admin user listing, account creation, ban/unban, and deletion.
 - SQLAlchemy database access.
-- PostgreSQL persistence for the deployed backend.
-- React frontend deployment and FastAPI backend deployment. Out of scope or not implemented / not verified
-- Group creation and group membership permissions.
-- Refresh-token rotation and refresh-cookie handling.
-- Session listing and individual session revocation.
-- Audit log and security-event dashboard.
-- Brute-force login lockout.
-- Admin CSV exports and bulk moderation.
-- Automated tests for every security and permission requirement.
-- Video demonstration link. Assumptions and constraints
-- The application is accessed through a modern web browser.
-- The frontend and backend are deployed separately.
-- The frontend uses an API base URL configured through a Vite environment variable.
-- The backend reads sensitive configuration such as SECRET_KEY and DATABASE_URL from environment variables.
-- Hosting services may have cold starts or deployment delays.
-- Production database access depends on the configured Supabase connection string and database availability. A5. User Stories ID User story US-01 As a visitor, I want to create a student account so that I can access the application.
-  US-02 As a registered user, I want to log in so that I can access features allowed by my role.
-  US-03 As an authenticated user, I want to retrieve my account information so that I can confirm which account is active.
-  US-04 As a student, I want to view assignments so that I can see the work assigned to me.
-  US-05 As a student, I want to see assignment status and priority so that I can understand the current state of each assignment.
-  US-06 As a teacher, I want to create an assignment so that students can see its details.
-  US-07 As a teacher, I want to update an assignment so that corrected information is available.
-  US-08 As a teacher, I want to delete an assignment when it is no longer required.
-  US-09 As an admin, I want to list registered users so that I can manage accounts.
-  US-10 As an admin, I want to create student and teacher accounts so that authorized accounts can be provisioned.
-  US-11 As an admin, I want to ban or unban a user so that access can be controlled. US-12 As an admin, I want to delete a user account when required. Part B. Software Requirements (SRS) B1. Introduction This section records the functional and non-functional requirements for Student Assignment Tracker. It is intended for the instructor, evaluator, developer, and anyone reviewing or maintaining the application. Term Definition JWT JSON Web Token, a signed token used to carry claims about an authenticated user
-  Access token A token presented to protected API endpoints to identify the authenticated user
-  RBAC Role-Based Access Control; permissions are determined by the user's assigned role
-  Role A user category such as student, teacher, or admin Password hashing A one-way transformation used to store passwords without storing the original password References: FastAPI documentation (https://fastapi.tiangolo.com/), SQLAlchemy documentation (https://docs.sqlalchemy.org/), React documentation (https://react.dev/), and RFC 7519 -- JSON Web Token (https://www.rfc-editor.org/rfc/rfc7519). B2. Functional Requirements Authentication requirements ID Requirement FR-AUTH-01 The system shall allow a visitor to register an account using the signup form.
-  FR-AUTH-02 The public signup operation shall create a student account and shall not accept a caller-selected teacher or admin role.
-  FR-AUTH-03 The system shall allow a registered user to log in using an email address and password.
-  FR-AUTH-04 The system shall store a password hash rather than the original plaintext password.
-  FR-AUTH-05 The system shall issue a signed JWT after successful authentication.
-  FR-AUTH-06 The system shall provide an authenticated endpoint to retrieve the current user's account information.
-  FR-AUTH-07 The system shall reject requests with missing or invalid authentication credentials on protected endpoints.
-  FR-AUTH-08 The system shall reject an inactive/banned user when the backend authentication dependency checks the account. FR-AUTH-09 The system shall prevent public signup from assigning privileged roles through extra request fields. Refresh-token rotation, logout revocation, session management, password-change endpoints, and lockout behavior are not verified and must not be claimed as implemented without additional evidence. Role-based access requirements ID Requirement FR-RBAC-01 The system shall support the student, teacher, and admin roles.
-  FR-RBAC-02 The backend shall enforce role restrictions for protected operations.
-  FR-RBAC-03 A student shall be allowed to read assignment information.
-  FR-RBAC-04 A student shall not be allowed to create, update, or delete assignments.
-  FR-RBAC-05 A teacher shall be allowed to create, update, and delete assignment records.
-  FR-RBAC-06 An admin shall be allowed to access the implemented user-management operations. FR-RBAC-07 Public signup shall not allow a visitor to create an admin or teacher account. Administrator requirements ID Requirement FR-ADM-01 The system shall allow an admin to retrieve the user list.
-  FR-ADM-02 The system shall allow an admin to create student and teacher accounts through the admin interface.
-  FR-ADM-03 The system shall allow an admin to ban a user.
-  FR-ADM-04 The system shall allow an admin to unban a user.
-  FR-ADM-05 The system shall allow an admin to delete a user. FR-ADM-06 The system shall prevent non-admin users from accessing admin-only endpoints. Admin statistics, advanced search/filtering, pagination, role-change actions, session revocation, bulk actions, moderation queues, activity logs, security analytics, and CSV exports are not verified as implemented. Assignment domain requirements ID Requirement FR-DOMAIN-01 The system shall store assignment information including title, course, due date, priority, and status.
-  FR-DOMAIN-02 The system shall allow an authorized teacher to create an assignment.
-  FR-DOMAIN-03 The system shall allow an authorized teacher to retrieve assignment records.
-  FR-DOMAIN-04 The system shall allow an authorized teacher to update an assignment.
-  FR-DOMAIN-05 The system shall allow an authorized teacher to delete an assignment. FR-DOMAIN-06 The system shall provide students with read access to assignment information. B3. Non-Functional Requirements ID Category Requirement / verification NFR-SEC-01 Security The application shall read secret configuration from environment variables rather than committing secret values to source control.
-  NFR-SEC-02 Security Passwords shall be stored as hashes.
-  NFR-SEC-03 Security Authorization shall be checked by the backend, not only by hiding frontend controls.
-  NFR-PERF-01 Performance API endpoints should return within a reasonable time under normal project demonstration usage; a measured response-time target has not yet been recorded.
-  NFR-USE-01 Usability The frontend shall provide forms and role-appropriate dashboard views.
-  NFR-USE-02 Usability The frontend shall show loading and error feedback for relevant API operations.
-  NFR-REL-01 Reliability Production account and assignment data shall be stored in the configured persistent PostgreSQL database. NFR-MAINT-01 Maintainability Backend database access shall be centralized through the SQLAlchemy database module. B4. Roles and Permission Matrix Endpoint groups by role Operation Visitor Student Teacher Admin Signup as student Yes No No No Login Yes Yes Yes Yes Read own profile (/auth/me) No Yes Yes Yes Read assignments No Yes Yes Yes Create assignment No No Yes Not established Update assignment No No Yes Not established Delete assignment No No Yes Not established List users No No No Yes Create student/teacher account No No No Yes Ban/unban user No No No Yes Delete user No No No Yes
-"Not established" means the precise admin permission for that assignment operation must be checked in the current backend before submission. Group permissions Groups and group-member permission levels are not part of the verified implementation. Therefore, create/update/assign group permissions and owner-only group actions are not applicable to the current project. Admin rules The verified implementation includes admin-only user-management routes and does not allow public signup to select the admin role. Additional safeguards such as preventing an admin from banning another admin or changing their own role must be tested against the current source code before being claimed. B5. Use Cases UC-01: Register a student account
-- Actor: Visitor
-- Precondition: The visitor is not logged in and provides valid registration information.
-- Main flow:
-  1. Visitor opens the signup page.
-  2. Visitor enters name, email, and password.
-  3. Frontend sends the signup request to the backend.
-  4. Backend validates the request and creates a student account.
-  5. Backend stores the password hash in the database.
-- Alternative/error flow: Invalid input is rejected with a validation response. A duplicate email is rejected.
-- Postcondition: A student account is stored in the database. UC-02: Log in
-- Actor: Student, teacher, or admin
-- Precondition: The account exists and is active.
-- Main flow:
-  1. User enters email and password.
-  2. Frontend sends login credentials to the backend over HTTPS.
-  3. Backend verifies the password against the stored hash.
-  4. Backend issues an authentication token.
-  5. Frontend stores the authentication state and displays the role-appropriate interface.
-- Alternative/error flow: Invalid credentials are rejected; inactive users are not authorized.
-- Postcondition: The user is authenticated. UC-03: Create an assignment
-- Actor: Teacher
-- Precondition: Teacher is authenticated.
-- Main flow:
+- Supabase PostgreSQL production persistence.
+- Vercel frontend and Render backend deployment.
+
+### Out of scope / not implemented or not verified
+
+- Refresh-token rotation and reuse detection.
+- Server-side logout/session revocation and session listing.
+- Profile update and change-password workflows.
+- Group creation, membership, and permission assignment.
+- Audit/activity log and security analytics.
+- Brute-force login lockout and IP rate limiting.
+- Bulk moderation and CSV export.
+- Comprehensive automated API/security tests.
+- Verified video demonstration.
+
+### Assumptions and constraints
+
+- Users access the application through a modern browser.
+- Frontend and backend are deployed separately.
+- `VITE_API_URL` configures the frontend API base URL.
+- Backend secrets and database configuration are provided through environment variables.
+- Supabase PostgreSQL is used for production; SQLite can be used as a local fallback.
+- Hosting services may have cold starts and deployment limits.
+- This is an individual CSE309 project.
+
+## A5. User Stories
+
+**Table 4: User stories**
+
+| ID | User story |
+|---|---|
+| US-01 | As a visitor, I want to register a student account so that I can use the application. |
+| US-02 | As a registered user, I want to log in so that I can access features allowed by my role. |
+| US-03 | As an authenticated user, I want to retrieve my account information so that I can confirm which account is active. |
+| US-04 | As a student, I want to view assignments so that I can see academic work available to me. |
+| US-05 | As a student, I want to see assignment status and priority so that I can understand its progress. |
+| US-06 | As a teacher, I want to create an assignment so that students can see its details. |
+| US-07 | As a teacher, I want to update an assignment so that corrected information is available. |
+| US-08 | As a teacher, I want to delete an assignment that is no longer required. |
+| US-09 | As an admin, I want to list registered users so that I can manage accounts. |
+| US-10 | As an admin, I want to create student and teacher accounts so that accounts can be provisioned. |
+| US-11 | As an admin, I want to ban or unban a user so that account access can be controlled. |
+| US-12 | As an admin, I want to delete a user account when required. |
+
+Group-specific user stories are not included because group functionality is not part of the verified implementation.
+
+---
+
+# Part B. Software Requirements (SRS)
+
+## B1. Introduction
+
+This section specifies the functional and non-functional requirements of Student Assignment Tracker. It describes expected application behavior and provides requirement IDs that can be linked to implementation, tests, and screenshots.
+
+**Intended readers:** Course instructor, project evaluator, developer, and future maintainer.
+
+**Definitions**
+
+| Term | Definition |
+|---|---|
+| JWT | JSON Web Token; a signed token used to carry authentication claims |
+| Access token | Token sent with a protected API request to identify an authenticated user |
+| Refresh token | Credential used to obtain a new access token; not verified in this project |
+| RBAC | Role-Based Access Control; access is determined by user role |
+| Role | User category such as student, teacher, or admin |
+| Permission | Authorization rule that determines whether an operation is allowed |
+| Audit log | Record of important actions; not verified in this project |
+
+**References**
+
+- [RFC 7519 – JSON Web Token](https://www.rfc-editor.org/rfc/rfc7519)
+- [FastAPI documentation](https://fastapi.tiangolo.com/)
+- [React documentation](https://react.dev/)
+- [SQLAlchemy documentation](https://docs.sqlalchemy.org/)
+- [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/)
+
+## B2. Functional Requirements
+
+### Authentication requirements (FR-AUTH)
+
+**Table 5: Authentication requirements**
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-AUTH-01 | The system shall allow a visitor to register an account using the signup form. | Implemented |
+| FR-AUTH-02 | Public signup shall create a student account and shall not accept a caller-selected teacher/admin role. | Implemented through schema validation; verify source |
+| FR-AUTH-03 | The system shall allow a registered user to log in using email and password. | Implemented |
+| FR-AUTH-04 | The system shall store a password hash rather than the original plaintext password. | Implemented |
+| FR-AUTH-05 | The system shall issue a signed JWT after successful authentication. | Implemented |
+| FR-AUTH-06 | The system shall provide an authenticated endpoint to retrieve the current user's information. | Implemented: `/auth/me` |
+| FR-AUTH-07 | The system shall reject requests with missing or invalid authentication credentials on protected endpoints. | Implemented through dependencies |
+| FR-AUTH-08 | The system shall reject an inactive/banned user when authentication checks the account. | Implemented according to development; verify live |
+| FR-AUTH-09 | The system shall prevent public signup from assigning privileged roles through extra request fields. | Implemented through schema validation |
+| FR-AUTH-10 | The system shall support refresh-token rotation and reject reuse of an old refresh token. | Not implemented / not verified |
+| FR-AUTH-11 | The system shall revoke a server-side session on logout. | Not implemented / not verified |
+| FR-AUTH-12 | The system shall list active sessions and allow individual session revocation. | Not implemented / not verified |
+| FR-AUTH-13 | The system shall allow a user to update profile information. | Not implemented / not verified |
+| FR-AUTH-14 | The system shall allow a user to change a password after verifying the current password. | Not implemented / not verified |
+| FR-AUTH-15 | The system shall temporarily block login after repeated failed attempts. | Not implemented / not verified |
+| FR-AUTH-16 | The system shall use a password pepper in addition to hashing. | Not verified; do not claim unless confirmed |
+
+### Role-based access requirements (FR-RBAC)
+
+**Table 6: RBAC requirements**
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-RBAC-01 | The system shall support student, teacher, and admin roles. | Implemented |
+| FR-RBAC-02 | The backend shall enforce role restrictions for protected operations. | Implemented |
+| FR-RBAC-03 | A student shall be allowed to read assignment information. | Implemented by role design; verify live |
+| FR-RBAC-04 | A student shall not be allowed to create, update, or delete assignments. | Implemented through teacher-only checks; test |
+| FR-RBAC-05 | A teacher shall be allowed to create, update, and delete assignments. | Implemented |
+| FR-RBAC-06 | An admin shall be allowed to access implemented user-management operations. | Implemented |
+| FR-RBAC-07 | Public signup shall not allow a visitor to create an admin or teacher account. | Implemented |
+| FR-RBAC-08 | The system shall enforce record ownership so users cannot access another user's private records. | Not verified |
+| FR-RBAC-09 | The system shall support group creation and group membership. | Not implemented / not verified |
+| FR-RBAC-10 | The system shall allow group owners to assign member permissions. | Not implemented / not verified |
+| FR-RBAC-11 | The system shall restrict owner-only group actions to the group owner. | Not implemented / not verified |
+| FR-RBAC-12 | The system shall prevent an administrator from changing their own role or banning another administrator. | Not verified |
+
+### Administrator requirements (FR-ADM)
+
+**Table 7: Admin requirements**
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-ADM-01 | The system shall allow an admin to retrieve the user list. | Implemented |
+| FR-ADM-02 | The system shall allow an admin to create student and teacher accounts. | Implemented |
+| FR-ADM-03 | The system shall allow an admin to ban a user. | Implemented |
+| FR-ADM-04 | The system shall allow an admin to unban a user. | Implemented |
+| FR-ADM-05 | The system shall allow an admin to delete a user. | Implemented |
+| FR-ADM-06 | The system shall prevent non-admin users from accessing admin-only endpoints. | Implemented |
+| FR-ADM-07 | The system shall display overview statistics. | Not verified |
+| FR-ADM-08 | The system shall support user search, filters, and pagination. | Not verified |
+| FR-ADM-09 | The system shall display user details, sessions, and recent activity. | Not implemented / not verified |
+| FR-ADM-10 | The system shall allow admins to change user roles. | Not verified |
+| FR-ADM-11 | The system shall allow admins to revoke user sessions. | Not implemented / not verified |
+| FR-ADM-12 | The system shall support bulk moderation actions. | Not implemented / not verified |
+| FR-ADM-13 | The system shall maintain an activity log with filters. | Not implemented / not verified |
+| FR-ADM-14 | The system shall display failed-login security analytics. | Not implemented / not verified |
+| FR-ADM-15 | The system shall export filtered records as CSV. | Not implemented / not verified |
+| FR-ADM-16 | The system shall record a reason for every ban action. | Not verified |
+
+### Assignment domain requirements (FR-DOMAIN)
+
+**Table 8: Assignment requirements**
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-DOMAIN-01 | The system shall store an assignment title. | Implemented |
+| FR-DOMAIN-02 | The system shall store the course name. | Implemented |
+| FR-DOMAIN-03 | The system shall store an assignment due date. | Implemented |
+| FR-DOMAIN-04 | The system shall support Low, Medium, and High priorities. | Implemented |
+| FR-DOMAIN-05 | The system shall support Pending, In Progress, and Completed statuses. | Implemented |
+| FR-DOMAIN-06 | The system shall allow an authorized teacher to create an assignment. | Implemented |
+| FR-DOMAIN-07 | The system shall allow authorized users to retrieve assignment records. | Implemented by role design; verify routes |
+| FR-DOMAIN-08 | The system shall allow an authorized teacher to update an assignment. | Implemented |
+| FR-DOMAIN-09 | The system shall allow an authorized teacher to delete an assignment. | Implemented |
+| FR-DOMAIN-10 | The system shall provide students with read access to assignment information. | Implemented by role design; verify live |
+
+## B3. Non-Functional Requirements
+
+**Table 9: Non-functional requirements**
+
+| ID | Category | Requirement | Verification |
+|---|---|---|---|
+| NFR-SEC-01 | Security | Secrets shall be read from environment variables, not committed to source control. | Inspect repository and deployment settings |
+| NFR-SEC-02 | Security | Passwords shall be stored as hashes. | Inspect hashing implementation/database |
+| NFR-SEC-03 | Security | Authorization shall be checked by the backend. | Send restricted API request directly |
+| NFR-SEC-04 | Security | Public signup shall not permit privileged role assignment. | Submit extra role field |
+| NFR-PERF-01 | Performance | API requests should complete in reasonable time under normal demo usage. | Record actual response times |
+| NFR-USE-01 | Usability | The frontend shall provide forms and role-appropriate dashboards. | Inspect deployed interfaces |
+| NFR-USE-02 | Usability | The frontend should provide loading and error feedback. | Test API success and failure |
+| NFR-REL-01 | Reliability | Production data shall persist in PostgreSQL. | Verify test record after restart |
+| NFR-MAINT-01 | Maintainability | Database access shall be centralized through SQLAlchemy configuration. | Inspect backend database module |
+| NFR-MAINT-02 | Maintainability | Dependencies shall be recorded in dependency files. | Inspect requirements and lockfile |
+
+## B4. Roles and Permission Matrix
+
+### Endpoint groups against roles
+
+**Table 10: Endpoint groups by roles**
+
+| Endpoint / operation | Visitor | Student | Teacher | Admin |
+|---|---:|---:|---:|---:|
+| Signup as student | Yes | No | No | No |
+| Login | Yes | Yes | Yes | Yes |
+| Read own profile (`/auth/me`) | No | Yes | Yes | Yes |
+| Read assignments | No | Yes | Yes | Verify |
+| Create assignment | No | No | Yes | Not established |
+| Update assignment | No | No | Yes | Not established |
+| Delete assignment | No | No | Yes | Not established |
+| List users | No | No | No | Yes |
+| Create student/teacher account | No | No | No | Yes |
+| Ban/unban user | No | No | No | Yes |
+| Delete user | No | No | No | Yes |
+| Group operations | No | No | No | Not implemented |
+
+The exact permission of an admin for assignment CRUD must be checked in the current backend. “Not established” avoids claiming an unverified permission.
+
+### Group permissions
+
+**Table 11: Group permissions**
+
+| Group action | Create | Update | Assign | Current status |
+|---|---|---|---|---|
+| Create group | Not available | Not available | Not available | Not implemented |
+| Update group | Not available | Not available | Not available | Not implemented |
+| Add/remove members | Not available | Not available | Not available | Not implemented |
+| Assign member permissions | Not available | Not available | Not available | Not implemented |
+| Owner-only actions | Not available | Not available | Not available | Not implemented |
+
+### Admin rules
+
+**Table 12: Admin rules**
+
+| Rule | Current status |
+|---|---|
+| Only admin can access user-management endpoints | Implemented |
+| Public signup cannot create admin | Implemented |
+| Admin can create student/teacher accounts | Implemented |
+| Admin can ban/unban users | Implemented |
+| Admin can delete users | Implemented |
+| Admin cannot change own role | Not verified |
+| Admin cannot ban another admin | Not verified |
+| System admin has special group rights | Not applicable; groups not implemented |
+
+## B5. Use Cases
+
+### UC-01: Log in
+
+- **Actor:** Student, teacher, or admin.
+- **Preconditions:** Account exists and is active.
+- **Main flow:**
+  1. User opens the login page.
+  2. User enters email and password.
+  3. Frontend sends the request to `/auth/login`.
+  4. Backend retrieves the account and verifies the password hash.
+  5. Backend issues a signed JWT.
+  6. Frontend stores authentication state and displays the appropriate interface.
+- **Alternative/error flows:** Invalid credentials are rejected; invalid input is rejected by validation; inactive users should be rejected.
+- **Postcondition:** User is authenticated.
+- **Note:** Refresh-token rotation is not verified.
+
+### UC-02: Create a record (assignment)
+
+- **Actor:** Teacher.
+- **Preconditions:** Teacher is authenticated.
+- **Main flow:**
   1. Teacher opens the assignment form.
-  2. Teacher enters title, course, due date, and priority.
-  3. Frontend sends the create request with authentication.
-  4. Backend checks the user's role.
+  2. Teacher enters title, course, due date, priority, and supported fields.
+  3. Frontend sends the request with the token.
+  4. Backend validates authentication and teacher role.
   5. Backend validates and stores the assignment.
   6. Frontend refreshes the assignment list.
-- Alternative/error flow: Missing or invalid fields are rejected; a user without teacher permission is denied.
-- Postcondition: The assignment is stored and available through the application. UC-04: Attempt a restricted assignment action
-- Actor: Student
-- Precondition: Student is authenticated.
-- Main flow:
-  1. Student attempts to call a teacher-only write operation.
-  2. Backend verifies the token and retrieves the account.
-  3. Backend checks the user's role.
-  4. Backend rejects the operation because the user is not a teacher.
-- Alternative/error flow: Missing or invalid credentials result in an authentication error; a valid but unauthorized user receives an authorization error.
-- Postcondition: No unauthorized assignment change is made. UC-05: Ban a user
-- Actor: Admin
-- Precondition: Admin is authenticated and the target user exists.
-- Main flow:
-  1. Admin opens the user-management dashboard.
-  2. Admin selects a user and chooses the ban action.
-  3. Frontend sends the request to the admin endpoint.
-  4. Backend verifies the admin role and updates the user's active state.
-  5. The updated state is displayed in the admin interface.
-- Alternative/error flow: A non-admin request is rejected; an unknown user cannot be updated.
-- Postcondition: The target account is inactive, and authentication checks reject the inactive account. UC-06: Delete a user
-- Actor: Admin
-- Precondition: Admin is authenticated and the target user exists.
-- Main flow:
-  1. Admin selects a user.
-  2. Admin confirms deletion.
-  3. Frontend sends the delete request.
-  4. Backend verifies admin authorization and deletes the target record.
-  5. The user list is refreshed.
-- Alternative/error flow: Unauthorized requests are rejected; database constraints may prevent deletion if related records require handling.
-- Postcondition: The user record is removed if the operation succeeds. B6. Acceptance Criteria ID Given When Then AC-01 A visitor The visitor A student account provides valid submits signup is created signup details
-  AC-02 A visitor The request is The extra field includes a role submitted is rejected field in public rather than signup granting a privileged role
-  AC-03 A registered The user logs in The backend active user returns an provides valid authentication credentials token
-  AC-04 A student is The student The backend authenticated attempts a denies the teacher-only request write operation
-  AC-05 A teacher is The teacher The assignment is authenticated creates a valid saved assignment
-  AC-06 An admin is The admin lists The user list is authenticated users returned
-  AC-07 An admin bans a The banned user The backend user makes a protected rejects the request inactive account AC-08 A non-admin calls The request is The backend an admin endpoint processed denies the request Token expiry, token tampering, refresh rotation, group permissions, audit log behavior, and admin-to-admin protection require separate implementation verification and tests. B7. Traceability Matrix Requirement Endpoint / screen Test or verification Evidence FR-AUTH-01/02 Signup page, Register student; Add S1 /auth/signup verify role is student; try extra role field
-  FR-AUTH-03/05 Login page, Login with valid and Add S2 /auth/login invalid credentials
-  FR-AUTH-06 /auth/me Call endpoint with Add S3 valid token
-  FR-RBAC-03/04 Student dashboard Confirm student can Add S4 and assignment read but cannot write API
-  FR-RBAC-05 Teacher dashboard Create/update/delete Add S5 and assignment assignment as teacher API
-  FR-ADM-01/02 Admin dashboard, List users and create Add S6 /admin/users student/teacher
-  FR-ADM-03/04 Admin Ban and unban a test Add S7 user-management user interface
-  FR-ADM-05 Admin Delete a test user Add S8 user-management interface
-  NFR-REL-01 Supabase Create a test record Add S9 PostgreSQL and verify persistence after restart
-  Deployment Vercel, Render, Open production Add S10--S12 /docs frontend, health endpoint, and docs Part C. Technical Design (TDD) C1. Technology Stack Component Technology Version Reason Frontend React 19.x (verify lockfile) Component-based framework user interface
-  Frontend language TypeScript Verify lockfile Static typing for frontend code
-  Build tool Vite Verify lockfile Frontend development and production build
-  Styling Tailwind CSS 4.x (verify lockfile) Utility-based styling
-  Backend framework FastAPI fastapi[standard] Python REST API version specified in requirements
-  ORM SQLAlchemy Verify requirements Database models and queries
-  Database PostgreSQL Supabase-hosted Persistent relational storage
-  Local development SQLite Built into Python runtime Local development database fallback
-  PostgreSQL driver psycopg 3 psycopg[binary]>=3.2.0 PostgreSQL connectivity
-  Password hashing Argon2 via Verify installed Password hashing configured package/version security library
-  Authentication JWT Verify configured library Signed and algorithm in source authentication tokens
-  Frontend hosting Vercel Hosted service Frontend deployment
-  Backend hosting Render Hosted service FastAPI deployment Database hosting Supabase Hosted PostgreSQL Persistent production data Before final submission, use the package lockfiles and backend/requirements.txt to replace "verify" with exact installed versions. C2. System Architecture +--------------------------+ | User's Web Browser | | React + TypeScript UI | +------------+-------------+ | | HTTPS API requests | Authorization: Bearer v +--------------------------+ | Vercel Frontend | | student-assingment- | | tracker.vercel.app | +------------+-------------+ | | HTTPS requests to configured API base URL v +--------------------------+ | Render FastAPI Backend | | Authentication, RBAC, | | Assignment and Admin API | +------------+-------------+ | | SQLAlchemy / psycopg v +--------------------------+ | Supabase PostgreSQL | | users, assignments | +--------------------------+
+- **Alternative/error flows:** Invalid data is rejected; missing/invalid token produces an authentication error; a student is denied a teacher-only write action.
+- **Postcondition:** Assignment is stored.
+
+### UC-03: Change a member's permissions
+
+- **Actor:** Group owner.
+- **Preconditions:** A group and members exist.
+- **Status:** Not available because group creation, membership, and permission assignment are not implemented or verified.
+
+### UC-04: A denied action
+
+- **Actor:** Student.
+- **Preconditions:** Student is authenticated.
+- **Main flow:**
+  1. Student attempts a teacher-only assignment write operation.
+  2. Backend validates the token.
+  3. Backend retrieves the current user.
+  4. Backend checks the required role.
+  5. Backend rejects the request because the user is not a teacher.
+- **Alternative/error flows:** Missing/invalid credentials should produce 401; a valid user without the required role should receive 403.
+- **Postcondition:** No unauthorized write is performed.
+
+### UC-05: Ban a user
+
+- **Actor:** Admin.
+- **Preconditions:** Admin is authenticated and target user exists.
+- **Main flow:**
+  1. Admin opens user management.
+  2. Admin selects a user and chooses ban.
+  3. Frontend sends the admin request.
+  4. Backend verifies admin authorization.
+  5. Backend changes the user's active state.
+  6. Frontend refreshes the user list.
+- **Alternative/error flows:** Non-admin requests are rejected; unknown users cannot be updated; inactive users should be rejected by later authentication checks.
+- **Postcondition:** Target account becomes inactive.
+- **Status:** Ban/unban was developed; verify the live behavior.
+
+### UC-06: Read the audit log
+
+- **Actor:** Admin.
+- **Status:** Not available because an audit-log feature has not been established in the current implementation.
+
+### Use-case diagram
+
+**Figure 1: Main application use cases**
+
+```mermaid
+flowchart LR
+    V([Visitor])
+    S([Student])
+    T([Teacher])
+    A([Admin])
+    SU[Register]
+    LI[Login]
+    RE[View assignments]
+    CR[Create assignment]
+    UP[Update assignment]
+    DE[Delete assignment]
+    UL[List users]
+    CU[Create student/teacher]
+    BA[Ban/unban user]
+    DU[Delete user]
+    V --> SU
+    V --> LI
+    S --> LI
+    S --> RE
+    T --> LI
+    T --> RE
+    T --> CR
+    T --> UP
+    T --> DE
+    A --> LI
+    A --> UL
+    A --> CU
+    A --> BA
+    A --> DU
+```
+
+## B6. Acceptance Criteria
+
+**Table 13: Acceptance criteria**
+
+| ID | Given | When | Then |
+|---|---|---|---|
+| AC-01 | Visitor provides valid signup details | Signup submitted | Student account is created |
+| AC-02 | Visitor includes privileged role in signup | Request submitted | Extra field is rejected |
+| AC-03 | Active user provides valid credentials | User logs in | Token is returned |
+| AC-04 | Student is authenticated | Student attempts teacher-only write | Backend denies request |
+| AC-05 | Teacher is authenticated | Teacher creates valid assignment | Assignment is saved |
+| AC-06 | Admin is authenticated | Admin lists users | User list is returned |
+| AC-07 | Admin bans a user | Banned user makes protected request | Backend rejects inactive account |
+| AC-08 | Non-admin calls admin endpoint | Request processed | Backend denies request |
+| AC-09 | User presents expired token | Protected endpoint called | 401 expected; verify test |
+| AC-10 | User presents tampered token | Protected endpoint called | Token rejected; verify test |
+| AC-11 | User accesses another user's private record | Request processed | Ownership check should deny; not verified |
+| AC-12 | Group member lacks permission | Restricted group action attempted | 403 expected; group feature not implemented |
+| AC-13 | Admin attempts to ban another admin | Request processed | Should be rejected if rule implemented; not verified |
+| AC-14 | User repeatedly submits wrong passwords | Login attempts processed | Lockout expected only if implemented; not verified |
+
+## B7. Traceability Matrix
+
+**Table 14: Requirement, endpoint/screen, test, screenshot**
+
+| Requirement | Endpoint / screen | Test | Evidence |
+|---|---|---|---|
+| FR-AUTH-01/02 | Signup, `/auth/signup` | Register student; submit extra role field | S1 |
+| FR-AUTH-03/05 | Login, `/auth/login` | Valid/invalid login | S1 |
+| FR-AUTH-06 | `/auth/me` | Call with valid token | S2 |
+| FR-AUTH-07/08 | Protected endpoints | Missing/invalid token and inactive account | S7/S9 |
+| FR-RBAC-01/02 | Backend role dependencies | Test student/teacher/admin access | S6 |
+| FR-RBAC-03/04 | Student dashboard and assignment API | Student read and denied write | S2/S6 |
+| FR-RBAC-05 | Teacher dashboard/API | Create/update/delete as teacher | S2 |
+| FR-ADM-01/02 | Admin dashboard/user API | List and create user | S10 |
+| FR-ADM-03/04 | Admin user management | Ban and unban test user | S9/S13 |
+| FR-ADM-05 | Admin user management | Delete test user | S10 |
+| FR-DOMAIN-01–05 | Assignment dashboard | Verify assignment fields | S2 |
+| NFR-SEC-01 | Environment configuration | Inspect repository and deployment | S19 |
+| NFR-REL-01 | Supabase PostgreSQL | Verify persistence after restart | S13 |
+| Deployment | Vercel, Render, `/docs` | Open live services | S18/S20 |
+
+---
+
+# Part C. Technical Design (TDD)
+
+## C1. Technology Stack
+
+**Table 15: Technology stack**
+
+| Component | Technology | Version / link | Reason |
+|---|---|---|---|
+| Frontend | React | Verify `package-lock.json` | Component-based interface |
+| Frontend language | TypeScript | Verify lockfile | Static typing |
+| Build tool | Vite | Verify lockfile | Development and production build |
+| Styling | Tailwind CSS | Tailwind v4 setup; verify lockfile | Utility-based styling |
+| Backend | FastAPI | `fastapi[standard]`; verify exact version | Python REST API |
+| ORM | SQLAlchemy | Verify requirements | Database models and queries |
+| Database | PostgreSQL | Supabase-hosted | Persistent relational storage |
+| Local database | SQLite | Local fallback | Development |
+| PostgreSQL driver | psycopg | Verify requirements | PostgreSQL connectivity |
+| Password hashing | pwdlib / Argon2 configuration | Verify requirements and source | Password hashing |
+| JWT library | PyJWT | Verify requirements and source | JWT handling |
+| Frontend hosting | Vercel | Hosted service | Frontend deployment |
+| Backend hosting | Render | Hosted service | API deployment |
+| Database hosting | Supabase | Hosted service | PostgreSQL persistence |
+
+Replace version notes with exact versions from dependency files. Do not guess versions.
+
+## C2. System Architecture
+
+**Figure 2: System architecture**
+
+```mermaid
+flowchart TB
+    U[User browser]
+    F[Vercel frontend<br/>React + TypeScript]
+    B[Render backend<br/>FastAPI]
+    A[Authentication and RBAC]
+    O[SQLAlchemy]
+    D[(Supabase PostgreSQL)]
+    U -->|HTTPS| F
+    F -->|HTTPS API request<br/>Bearer token for protected routes| B
+    B --> A
+    A --> O
+    O --> D
+    B -->|JSON response| F
+    F --> U
+```
+
+### Architecture explanation
+
 1. The browser loads the React application from Vercel.
-2. The frontend sends API requests to the FastAPI service hosted on Render.
-3. Protected requests include the access token in the authorization header, according to the frontend's configured authentication flow.
-4. FastAPI validates authentication and role permissions before executing protected operations.
-5. SQLAlchemy communicates with Supabase PostgreSQL using the configured DATABASE_URL.
-6. The backend returns JSON responses to the frontend. An audit-log component is not included in this architecture because audit logging was not verified as implemented. Refresh-cookie behavior is also not claimed. C3. Backend and Frontend Structure The following is a representative structure based on files and folders established during development. Confirm it against the final GitHub repository and add or remove entries to match the actual tree. Backend backend/ ├── app/ │ ├── main.py # FastAPI application and CORS configuration │ ├── database.py # SQLAlchemy engine, session and table initialization │ ├── models.py # SQLAlchemy database models │ ├── schemas.py # Request and response validation schemas │ ├── security.py # Password hashing and JWT configuration │ └── auth.py # Current-user and role authorization dependencies ├── create_admin.py # Local script for creating an admin account ├── requirements.txt # Python dependencies └── .env # Local environment variables; do not commit Frontend frontend/ ├── src/ │ ├── components/ # Shared interface components (verify actual files) │ ├── App.tsx # Main application interface │ ├── App.css # Application styles │ ├── index.css # Global styles │ └── main.tsx # React entry point ├── package.json ├── package-lock.json └── vite.config.ts The frontend also includes login/signup and role-specific dashboard components developed during the project. Update this tree with the exact filenames from the final repository. C4. Data Model The verified model information establishes two main entities: users and assignments. Confirm exact column names and constraints in backend/app/models.py before submission. User table Column Purpose Notes id User identifier Primary key
-name User's display name Required
+2. The frontend sends HTTPS API requests to the FastAPI backend on Render.
+3. Protected requests include the authentication token in the authorization header.
+4. FastAPI validates authentication and checks the user's role.
+5. SQLAlchemy performs database operations.
+6. The backend reads and writes data in Supabase PostgreSQL.
+7. The backend returns JSON responses to the frontend.
 
-email Login email Must be unique
+An audit-log service and refresh-cookie flow are not shown because they have not been verified. The API backend is hosted on Render, not Vercel.
 
-hashed_password Password hash Never store plaintext password
+## C3. Backend and Frontend Structure
 
-role Account role student, teacher, or admin is_active Account availability Used to reject banned/inactive accounts Assignment table The assignment schema includes the following application fields. Verify the exact database column names and SQL types in the model.
+The following is a representative tree based on the project structure established during development. Compare it with the final GitHub repository and correct any filename differences.
 
-Field Purpose id Assignment identifier title Assignment title course Course name dueDate / due-date field Assignment deadline priority Low, Medium, or High status Pending, In Progress, or Completed Relationships and persistence The backend uses SQLAlchemy models and Base.metadata.create_all() during startup to create missing tables. The production DATABASE_URL points to Supabase PostgreSQL. Local development can fall back to a SQLite database file when DATABASE_URL is not set. No group membership, refresh-token, or audit-log table has been verified.
+### Backend folder tree
 
-Insert an ER diagram generated from the actual SQLAlchemy models before submission. C5. API Design The following endpoints are established by the project development context. Confirm exact HTTP methods, request fields, and response codes in backend/app/main.py and the route modules. Method Path Authentication Purpose GET / Public Backend status message
+```text
+backend/
+├── app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── security.py
+│   └── auth.py
+├── create_admin.py
+├── requirements.txt
+└── .env                 # Local only; do not commit
+```
 
-GET /health Public Health check
+| File/folder | Responsibility |
+|---|---|
+| `app/main.py` | Creates FastAPI application, configures CORS/middleware, registers routes |
+| `app/database.py` | SQLAlchemy engine, session factory, and database base |
+| `app/models.py` | Database models such as User and Assignment |
+| `app/schemas.py` | Request and response validation |
+| `app/security.py` | Password hashing and JWT functions |
+| `app/auth.py` | Current-user and role authorization dependencies |
+| `create_admin.py` | Script to create an administrator account in configured database |
+| `requirements.txt` | Python dependencies |
+| `.env` | Local environment variables; excluded from Git |
 
-POST /auth/signup Public Register a student
+### Frontend folder tree
 
-POST /auth/login Public Authenticate a user
+```text
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── Login.tsx
+│   │   ├── Signup.tsx
+│   │   └── ...
+│   ├── App.tsx
+│   ├── App.css
+│   ├── index.css
+│   └── main.tsx
+├── package.json
+├── package-lock.json
+└── vite.config.ts
+```
 
-GET /auth/me Authenticated Retrieve current user
+| File/folder | Responsibility |
+|---|---|
+| `src/main.tsx` | React entry point |
+| `src/App.tsx` | Main application component and dashboard behavior |
+| `src/components/` | Reusable UI components including login/signup and dashboard components |
+| `src/App.css` | Application-level styling |
+| `src/index.css` | Global styles and Tailwind setup |
+| `package.json` | Frontend scripts and dependencies |
+| `package-lock.json` | Exact dependency resolution |
+| `vite.config.ts` | Vite configuration |
 
-GET /admin/users Admin List users
+Do not add folders such as repositories, services, contexts, or route guards unless they exist in the final source code.
 
-Admin user routes /admin/users/... Admin Create, ban, unban, or delete users; confirm exact paths Assignment routes /assignments... Role-dependent Assignment CRUD; confirm exact paths and methods FastAPI interactive documentation is available at https://student-assingment-tracker.onrender.com/docs.
+## C4. Data Model
 
-The API uses JSON request and response bodies. Authentication failures and validation errors are returned using FastAPI's HTTP error response format. Add the exact response codes and request schemas from the live API documentation before submission. C6. JWT Authentication Design The application uses JWT-based authentication. A user submits credentials to the login endpoint. The backend checks the account and password, then issues a signed token. The frontend uses the token when calling protected API endpoints.
+The application uses SQLAlchemy models. The two main entities established during development are users and assignments. Verify exact column types, constraints, and indexes in `backend/app/models.py`.
 
-The backend authentication dependency checks the token, retrieves the user, and rejects missing, invalid, or inactive accounts. The token's exact claims, signing algorithm, expiration duration, browser storage mechanism, and logout behavior must be verified from the final source code before being documented as exact values. User | | email + password v POST /auth/login | v FastAPI verifies password and account | v JWT issued | v Frontend stores authentication state | | protected API request with token v FastAPI validates token and user status | v Authorized endpoint or rejection Do not claim refresh-token rotation, httpOnly refresh cookies, session revocation, or automatic refresh handling unless these have been implemented and tested. C7. RBAC Design The application supports three roles: student, teacher, and admin. Role authorization is enforced on the backend through reusable dependencies.
+**Figure 3: Main data model**
 
-The authorization flow is:
-1. Receive the API request.
-2. Validate the supplied JWT.
-3. Retrieve the corresponding user from the database.
-4. Reject the request if the user does not exist or is inactive.
-5. Check the required role.
-6. Execute the endpoint only if authorization succeeds. A public signup request cannot assign a privileged role. The signup schema rejects extra fields, preventing a visitor from submitting role: "teacher" or role: "admin" to elevate their privileges.
-The exact dependency implementation should be quoted from the final backend/app/auth.py file in the submitted report. Group permissions and resource ownership rules are not verified features of this project. C8. Admin Dashboard Design The admin dashboard provides user-management functionality. Feature Purpose Verified action User list View registered Yes accounts
+```mermaid
+erDiagram
+    USER {
+        int id PK
+        string name
+        string email UK
+        string hashed_password
+        string role
+        boolean is_active
+    }
+    ASSIGNMENT {
+        int id PK
+        string title
+        string course
+        date dueDate
+        string priority
+        string status
+    }
+```
 
-Create account Add a student or Yes teacher
+This diagram lists the known fields. It does not assume a foreign-key relationship between users and assignments; confirm relationships in the actual SQLAlchemy models.
 
-Ban user Make an account Yes inactive
+**Table 16: User fields**
 
-Unban user Reactivate an account Yes
+| Column | Purpose | Note |
+|---|---|---|
+| `id` | User identifier | Primary key |
+| `name` | Display name | Required |
+| `email` | Login email | Unique |
+| `hashed_password` | Password hash | Never plaintext |
+| `role` | Account role | student, teacher, admin |
+| `is_active` | Account availability | Used for inactive/banned accounts |
 
-Delete user Remove an account Yes
+**Table 17: Assignment fields**
 
-Statistics dashboard Display aggregate Not verified metrics
+| Field | Purpose | Values / note |
+|---|---|---|
+| `id` | Assignment identifier | Primary key |
+| `title` | Assignment title | Text |
+| `course` | Course name | Text |
+| `dueDate` / due-date field | Deadline | Confirm exact SQL type |
+| `priority` | Assignment priority | Low, Medium, High |
+| `status` | Assignment progress | Pending, In Progress, Completed |
 
-Activity log Review administrative Not verified events
+### Relationships and persistence
 
-Security analytics Review failed logins Not verified and suspicious activity CSV export Export filtered records Not verified Add screenshots of the actual admin dashboard and verify every displayed action before submission. C9. Security Design and Threats Threat Implemented or known Remaining verification defence
-Password database leak Passwords are stored as Verify algorithm and hashes using the parameters configured password-hashing mechanism
+The backend uses SQLAlchemy. `DATABASE_URL` configures the database connection. Production uses Supabase PostgreSQL; local development can fall back to SQLite when a database URL is not configured. Verify the exact table initialization code in `database.py` and `main.py`.
 
-Stolen access token JWT signature Token expiry, validation is used revocation, and storage risks need review
+Separate tables for refresh-token sessions, groups, group permissions, or audit events have not been verified and are not included in this diagram.
 
-Stolen refresh token Refresh-token rotation Not implemented / not not verified verified
+## C5. API Design
 
-Brute-force login No lockout mechanism Add rate limiting and verified lockout
+The following paths are established by the project development context. Confirm exact methods, request bodies, response codes, and route names using the live FastAPI documentation.
 
-Privilege escalation Public signup rejects Test all privileged extra fields, including endpoints a caller-supplied role
+**Table 18: API endpoint summary**
 
-Access to another Role checks are Verify ownership rules user's data implemented; record ownership enforcement must be checked against actual query logic
+| Method | Path | Authentication | Purpose |
+|---|---|---|---|
+| GET | `/` | Public | Backend status |
+| GET | `/health` | Public | Health check |
+| POST | `/auth/signup` | Public | Register student |
+| POST | `/auth/login` | Public | Authenticate user |
+| GET | `/auth/me` | Authenticated | Retrieve current user |
+| GET | `/admin/users` | Admin | List users |
+| Various | `/admin/users/...` | Admin | Create, ban, unban, delete; verify exact paths |
+| Various | `/assignments...` | Role-dependent | Assignment CRUD; verify exact paths/methods |
 
-Cross-site scripting React escapes ordinary Review any unsafe HTML rendered text by rendering default
+**Live API docs:** [https://student-assingment-tracker.onrender.com/docs](https://student-assingment-tracker.onrender.com/docs)
 
-Cross-site request Token storage and Review if cookie forgery cookie strategy need authentication is used source verification
+The API uses JSON request/response bodies. FastAPI returns HTTP error responses for authentication, authorization, and validation failures.
 
-CORS misuse Backend has an explicit Review production and allowed-origin list preview origins
+| Status | Meaning |
+|---|---|
+| 200 | Request successful |
+| 201 | Resource created, where configured |
+| 401 | Missing or invalid authentication |
+| 403 | Authenticated user lacks permission |
+| 404 | Resource not found |
+| 422 | Request validation error |
+| 500 | Unexpected server error |
 
-Secrets in repository .env files are Verify Git history and ignored by Git deployment environment
+Confirm the exact status code for each route from the implementation.
 
-SQL injection SQLAlchemy ORM is used Review raw SQL usage for database operations Over-posting Signup schema forbids Review all write extra fields schemas C10. Deployment Frontend
-- Hosting: Vercel.
-- Production URL: https://student-assingment-tracker.vercel.app/.
-- Framework: React, TypeScript, and Vite.
-- Build command used by the frontend: npm run build.
-- API base URL is configured through the Vite environment variable VITE_API_URL. Backend
-- Hosting: Render.
-- Service URL: https://student-assingment-tracker.onrender.com.
-- Root directory: backend.
-- Build command: pip install -r requirements.txt.
-- Start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT. Database
-- Hosting: Supabase PostgreSQL.
-- ORM: SQLAlchemy.
-- Driver: psycopg 3.
-- Connection is configured through the DATABASE_URL environment variable. Environment variable names Variable Used by Purpose VITE_API_URL Vercel frontend Backend API base URL
-  DATABASE_URL Render backend and PostgreSQL connection local backend when string configured
-  SECRET_KEY Backend JWT signing secret Never include actual secret values in the report, screenshots, or GitHub repository. Local development may use a backend/.env file that is excluded from Git. C11. Testing The following are manual verification scenarios. Fill in the result column only after performing each test on the current deployed application. Test ID Test Expected result Actual result T-01 Open production Application loads (Run and frontend record)
-  T-02 Open backend Healthy status (Run and /health response record)
-  T-03 Register a student Account is (Run and account created record)
-  T-04 Attempt signup Request is (Run and with a privileged rejected record) role field
-  T-05 Log in with valid Authentication (Run and credentials succeeds record)
-  T-06 Retrieve Current user is (Run and /auth/me with a returned record) valid token
-  T-07 Attempt teacher Backend denies (Run and write operation as request record) student
-  T-08 Create assignment Assignment is (Run and as teacher saved record)
-  T-09 Update assignment Assignment is (Run and as teacher updated record)
-  T-10 Delete assignment Assignment is (Run and as teacher deleted record)
-  T-11 Open admin user User list is (Run and list as admin returned record)
-  T-12 Ban and unban a Account state (Run and test account changes record)
-  T-13 Create a user Student/teacher (Run and through admin account is record) dashboard created
-  T-14 Restart/redeploy Record remains in (Run and backend and verify PostgreSQL record) a test record Automated test output was not provided in the development information used for this draft. Do not describe these tests as automated or passed until the test suite has been run and its output captured. Part D. Evidence: Screenshots of the Running Application Take screenshots from the deployed production frontend. Keep the browser address bar visible where possible. Mask passwords, JWTs, database connection strings, and secret values. Use test accounts only and do not include real credentials in the repository. Screenshot Evidence to capture What it should prove S1 Signup page and Signup interface and validation feedback validation
-  S2 Login page and Authentication successful login interface
-  S3 Student dashboard Student's read-only assignment view
-  S4 Teacher dashboard with Teacher assignment assignment list management
-  S5 Teacher creates an Assignment creation assignment
-  S6 Teacher updates an Assignment update assignment
-  S7 Teacher deletes a test Assignment deletion assignment
-  S8 Student attempts a Backend role restricted write enforcement action, with Network tab
-  S9 Admin dashboard user Admin can view users list
-  S10 Admin creates a Admin account creation student/teacher account
-  S11 Admin bans and then Account status unbans a test user management
-  S12 Admin deletes a test User deletion account
-  S13 Supabase Table Editor Production database showing users and tables assignments tables
-  S14 Render service showing Backend deployment successful Live deployment
-  S15 Vercel production Frontend deployment deployment and domain
-  S16 FastAPI /docs page Published API documentation S17 Browser Network tab Frontend/backend showing a successful integration API request Insert the real screenshots into the final PDF and add captions that identify the requirement each screenshot supports. The screenshots have not been supplied with this draft. Part E. Project Management and Conclusion E1. How to Run and Test Prerequisites
+## C6. JWT Authentication Design
+
+The user submits an email and password to the login endpoint. The backend retrieves the account and verifies the submitted password against the stored hash. After successful authentication, the backend issues a signed JWT.
+
+For a protected request, the frontend sends the token in the authorization header. The backend validates the token, retrieves the user, checks account status, and then checks the required role.
+
+**Figure 4: JWT login and protected request sequence**
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend
+    participant API as FastAPI
+    participant DB as PostgreSQL
+    User->>Frontend: Enter email and password
+    Frontend->>API: POST /auth/login
+    API->>DB: Find user by email
+    DB-->>API: User and password hash
+    API->>API: Verify password
+    API-->>Frontend: Authentication token
+    Frontend-->>User: Display role dashboard
+    User->>Frontend: Protected operation
+    Frontend->>API: Request with Bearer token
+    API->>API: Validate token and account status
+    API->>DB: Read/write requested data
+    DB-->>API: Result
+    API-->>Frontend: JSON response or error
+```
+
+### Token claims and configuration
+
+Exact token claims, signing algorithm, expiry duration, and browser storage must be confirmed from backend security code and frontend login code.
+
+| Item | Current project description |
+|---|---|
+| User identity | JWT identifies authenticated user |
+| Role | Retrieved and checked by backend authorization |
+| Signing secret | Backend environment variable such as `SECRET_KEY` |
+| Validation | Backend authentication dependency |
+| Expiry | Verify exact configured lifetime |
+| Browser storage | Verify source; development context indicates localStorage authentication state |
+| Refresh token | Rotation and httpOnly refresh-cookie flow not verified |
+| Logout revocation | Server-side token/session revocation not verified |
+
+Security considerations: keep the signing secret out of GitHub; localStorage can expose tokens if an XSS vulnerability exists; cookie-based refresh flows require CSRF considerations; backend checks must be enforced on every protected request. Do not claim refresh-on-401 or logout revocation unless implemented and tested.
+
+## C7. RBAC Design
+
+The application supports `student`, `teacher`, and `admin`. Backend authorization uses reusable dependencies. Development work established functions/dependencies such as `get_current_user`, `require_role`, and admin authorization. Confirm exact definitions in the final `backend/app/auth.py`.
+
+**Figure 5: Authorization flow**
+
+```mermaid
+flowchart TD
+    A[Receive API request] --> B{Token provided?}
+    B -- No --> X[401 Unauthorized]
+    B -- Yes --> C[Validate JWT]
+    C --> D{Token valid?}
+    D -- No --> X
+    D -- Yes --> E[Retrieve user]
+    E --> F{User exists and active?}
+    F -- No --> X
+    F -- Yes --> G{Required role allowed?}
+    G -- No --> Y[403 Forbidden]
+    G -- Yes --> H[Execute endpoint]
+    H --> I[Return response]
+```
+
+### Illustrative reusable role check
+
+This is an explanatory example of the pattern, not a claim that the exact code is identical to the repository. Replace it with the actual 10–20 line excerpt from `backend/app/auth.py` before submission.
+
+```python
+from fastapi import Depends, HTTPException, status
+
+def require_role(*allowed_roles):
+    def role_checker(current_user=Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions",
+            )
+        return current_user
+
+    return role_checker
+```
+
+| Role | Permission summary |
+|---|---|
+| Student | Read assignment information; cannot perform teacher-only write actions |
+| Teacher | Manage assignment records through authorized CRUD endpoints |
+| Admin | Manage user accounts through admin-only endpoints |
+
+Public signup creates student accounts and rejects extra privileged role fields. Record ownership filtering and group permission checks are not verified. A new role would require updates to schemas, backend authorization, account creation, frontend role types/UI, and tests.
+
+## C8. Admin Dashboard Design
+
+The admin dashboard provides account-management functionality established during development: user listing, student/teacher account creation, banning/unbanning, and user deletion.
+
+**Table 19: Admin pages, endpoints, filters, actions, audit events**
+
+| Page/feature | Endpoint | Filters | Actions | Audit event |
+|---|---|---|---|---|
+| User list | `/admin/users` | Verify current implementation | View users | Not verified |
+| Create user | Admin user-creation route | Not verified | Create student/teacher | Not verified |
+| Ban user | Admin ban route | Not verified | Set inactive | Not verified |
+| Unban user | Admin unban route | Not verified | Reactivate | Not verified |
+| Delete user | Admin delete route | Not verified | Delete user | Not verified |
+| Overview statistics | Not verified | Not verified | Not verified | Not implemented/verified |
+| Activity log | Not verified | Not verified | Not verified | Not implemented/verified |
+| Security view | Not verified | Not verified | Not verified | Not implemented/verified |
+| CSV export | Not verified | Not verified | Not verified | Not implemented/verified |
+
+Add screenshots of the actual dashboard. Do not claim statistics, search, pagination, session views, bulk actions, or exports unless they are present and working.
+
+## C9. Security Design and Threats
+
+**Table 20: Threat, defence, and code location**
+
+| Threat | Defence / verification | File or module |
+|---|---|---|
+| Password database leak | Passwords stored as hashes | `app/security.py`, `app/models.py` |
+| Stolen access token | JWT validation; review expiry and browser storage | `app/security.py`, `app/auth.py`, frontend auth |
+| Stolen refresh token | Rotation not verified | Not verified |
+| Brute-force login | Lockout/rate limit not verified | Not verified |
+| Privilege escalation | Public signup schema rejects privileged roles | `app/schemas.py`, signup route |
+| Access to another user's record | Verify ownership filtering in queries | Assignment routes/models |
+| XSS | React escapes ordinary rendered text; review unsafe HTML and token storage | Frontend components |
+| CSRF | Review cookie strategy; refresh cookie not verified | Auth configuration |
+| CORS misuse | Explicit allowed-origin configuration; review production origins | `app/main.py` |
+| Secrets in repository | Environment variables and `.env` ignore; inspect Git history | `.gitignore`, deployment settings |
+| SQL injection | Use SQLAlchemy parameterized ORM operations; review raw SQL | Database/query code |
+| Over-posting | Request schemas validate allowed fields; signup rejects extra fields | `app/schemas.py` |
+
+A full security review still requires tests for token expiry/tampering, lockout, ownership, refresh-token reuse, session revocation, admin self-protection, and group permissions.
+
+## C10. Deployment on Vercel
+
+### Frontend deployment
+
+- Platform: Vercel
+- Production URL: [Student Assignment Tracker](https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/)
+- Framework: React, TypeScript, Vite
+- Build command: `npm run build`
+- API base URL: `VITE_API_URL`
+
+### Backend deployment
+
+- Platform: Render
+- Service: [student-assingment-tracker.onrender.com](https://student-assingment-tracker.onrender.com/)
+- Root directory: `backend`
+- Build command: `pip install -r requirements.txt`
+- Start command:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+### Database
+
+- Platform: Supabase
+- Database: PostgreSQL
+- ORM: SQLAlchemy
+- Driver: psycopg
+- Connection setting: `DATABASE_URL`
+
+**Figure 6: Deployment layout**
+
+```mermaid
+flowchart LR
+    Browser[User browser]
+    Vercel[Vercel frontend]
+    Render[Render FastAPI backend]
+    DB[(Supabase PostgreSQL)]
+    Browser -->|HTTPS| Vercel
+    Vercel -->|HTTPS API| Render
+    Render -->|SQLAlchemy| DB
+```
+
+**Table 21: Environment variable names**
+
+| Variable | Used by | Purpose |
+|---|---|---|
+| `VITE_API_URL` | Vercel frontend | Backend API base URL |
+| `DATABASE_URL` | Render backend | PostgreSQL connection |
+| `SECRET_KEY` | Render backend | JWT signing secret |
+
+Never include actual environment-variable values, passwords, tokens, or database connection strings in the report or repository.
+
+### Redeployment
+
+1. Commit and push code to the intended GitHub branch.
+2. Confirm Vercel is connected to the correct repository and branch.
+3. Confirm `VITE_API_URL` points to the deployed backend.
+4. Confirm Render uses the `backend` directory and correct build/start commands.
+5. Confirm Render environment variables are configured securely.
+6. Check Vercel deployment status.
+7. Check Render logs and `/health`.
+8. Open the frontend and test login, assignment access, and role restrictions.
+
+## C11. Testing
+
+Use manual tests on the live site and automated API tests if a test suite exists. The table below is a test plan, not a claim that every test has passed.
+
+### How to run tests
+
+If pytest and a test suite are present:
+
+```bash
+cd backend
+python -m pytest
+```
+
+Do not claim automated tests passed unless this command has actually been run and its output captured.
+
+**Table 22: Test cases and results**
+
+| Test ID | Test name | Requirement | Expected result | Actual result |
+|---|---|---|---|---|
+| T-01 | Open frontend | Deployment | Application loads | [Fill after testing] |
+| T-02 | Backend health check | Deployment | Healthy response | [Fill after testing] |
+| T-03 | Student signup | FR-AUTH-01 | Account created | [Fill after testing] |
+| T-04 | Signup with privileged role | FR-AUTH-02 | Extra field rejected | [Fill after testing] |
+| T-05 | Valid login | FR-AUTH-03/05 | Token returned | [Fill after testing] |
+| T-06 | Invalid login | FR-AUTH-03 | Authentication rejected | [Fill after testing] |
+| T-07 | Current-user endpoint | FR-AUTH-06 | Current user returned | [Fill after testing] |
+| T-08 | Student teacher-only write | FR-RBAC-04 | Backend denies | [Fill after testing] |
+| T-09 | Teacher creates assignment | FR-DOMAIN-06 | Assignment saved | [Fill after testing] |
+| T-10 | Teacher updates assignment | FR-DOMAIN-08 | Assignment updated | [Fill after testing] |
+| T-11 | Teacher deletes assignment | FR-DOMAIN-09 | Assignment deleted | [Fill after testing] |
+| T-12 | Admin lists users | FR-ADM-01 | User list returned | [Fill after testing] |
+| T-13 | Admin creates user | FR-ADM-02 | Account created | [Fill after testing] |
+| T-14 | Admin bans/unbans user | FR-ADM-03/04 | Account state changes | [Fill after testing] |
+| T-15 | Admin deletes user | FR-ADM-05 | User deleted | [Fill after testing] |
+| T-16 | Expired token | FR-AUTH-07 | 401 | [Not verified] |
+| T-17 | Tampered token | FR-AUTH-07 | Rejected | [Not verified] |
+| T-18 | Ownership restriction | FR-RBAC-08 | Other user's private record denied | [Not verified] |
+| T-19 | Group permission matrix | FR-RBAC-09–11 | Unauthorized group action denied | [Not implemented] |
+| T-20 | Admin self-protection | FR-RBAC-12 | Restricted action denied | [Not verified] |
+| T-21 | Failed-login lockout | FR-AUTH-15 | Lockout/rate limit | [Not implemented/verified] |
+| T-22 | Database persistence | NFR-REL-01 | Record remains after restart | [Fill after testing] |
+
+Use Pass, Fail, or Not tested based on the actual result. Do not mark a planned test as passed.
+
+---
+
+# Part D. Evidence: Screenshots of the Running Application
+
+Take screenshots from the deployed Vercel URL where possible, with the browser address bar and logged-in role visible. Crop to the relevant area. Number each screenshot, give a caption explaining what it proves, and include the requirement ID. Mask passwords, tokens, secret keys, and database connection strings.
+
+Create `docs/screenshots/` and save the real screenshots there. The paths below assume that folder.
+
+## D1. User Side
+
+### S1: Signup and login page
+
+Requirement IDs: FR-AUTH-01 and FR-AUTH-03.
+
+```markdown
+![S1 – Signup and login](screenshots/S1-signup-login.png)
+
+**Figure S1:** Signup and login interface demonstrating the account access screens. Requirement IDs: FR-AUTH-01 and FR-AUTH-03.
+```
+
+### S2: Main feature page of a logged-in user
+
+Requirement IDs: FR-DOMAIN-01 to FR-DOMAIN-05.
+
+```markdown
+![S2 – Assignment dashboard](screenshots/S2-assignment-dashboard.png)
+
+**Figure S2:** Assignment dashboard showing title, course, due date, priority, and status. Requirement IDs: FR-DOMAIN-01 to FR-DOMAIN-05.
+```
+
+### S3: Profile page and change-password form
+
+The original template requests a profile page and a change-password form where an incorrect current password is rejected. This functionality has not been verified.
+
+> **S3 – Not available:** Profile update and change-password functionality have not been verified in the current implementation. Do not add a fake screenshot.
+
+### S4: Sessions list with revoke action
+
+> **S4 – Not available:** A session list and individual session-revocation feature have not been verified.
+
+### S5: Group page showing members and permissions
+
+> **S5 – Not available:** Group membership and member-permission management are not implemented or verified.
+
+### S6: Action denied by RBAC
+
+Requirement IDs: FR-RBAC-02 and FR-RBAC-04.
+
+```markdown
+![S6 – RBAC denied action](screenshots/S6-rbac-denied.png)
+
+**Figure S6:** A student is denied a teacher-only assignment operation by backend role authorization. Requirement IDs: FR-RBAC-02 and FR-RBAC-04.
+```
+
+## D2. Security Behaviour
+
+### S7: Authorization header and expired token
+
+Show the Network tab with the token masked and an expired-token request returning 401. Test token expiry before adding the screenshot.
+
+```markdown
+![S7 – Protected API request](screenshots/S7-authorization-header.png)
+
+**Figure S7:** Protected API request with token masked. Add an expired-token 401 result only after verifying it.
+```
+
+### S8: Refresh request and httpOnly cookie
+
+> **S8 – Not available:** Refresh-token rotation and an httpOnly refresh-cookie flow have not been verified. Do not provide a fabricated screenshot.
+
+### S9: Banned user rejected on the next request
+
+Requirement IDs: FR-AUTH-08 and FR-ADM-03.
+
+```markdown
+![S9 – Banned user rejection](screenshots/S9-banned-user.png)
+
+**Figure S9:** A banned/inactive test account is rejected by the backend. Requirement IDs: FR-AUTH-08 and FR-ADM-03.
+```
+
+## D3. Admin Dashboard
+
+### S10: Overview statistics
+
+> **S10 – Not verified:** Add a screenshot only if the deployed admin dashboard actually displays overview statistics.
+
+### S11: Users list with search, filters, and pagination
+
+The user-list feature is established; search, filters, and pagination must be verified separately.
+
+```markdown
+![S11 – Admin user list](screenshots/S11-admin-users.png)
+
+**Figure S11:** Admin user-management screen showing registered accounts. Mention search, filters, and pagination only if present.
+```
+
+### S12: User detail with sessions and recent activity
+
+> **S12 – Not available:** A user-detail page with sessions and recent activity has not been verified.
+
+### S13: Ban dialog with reason and banned state
+
+```markdown
+![S13 – Admin ban action](screenshots/S13-admin-ban.png)
+
+**Figure S13:** Admin interface showing the ban action and resulting account state. Requirement ID: FR-ADM-03. Mention a reason field only if it exists.
+```
+
+### S14: Records and groups moderation list with bulk action
+
+> **S14 – Not available:** Group moderation and bulk actions have not been verified.
+
+### S15: Activity log with filters
+
+> **S15 – Not available:** An activity log with filters has not been verified.
+
+### S16: Security view with failed logins by IP and account
+
+> **S16 – Not available:** A failed-login security dashboard has not been verified.
+
+### S17: CSV export
+
+> **S17 – Not available:** CSV export has not been verified.
+
+## D4. Deployment
+
+### S18: Vercel frontend project
+
+```markdown
+![S18 – Vercel frontend](screenshots/S18-vercel-frontend.png)
+
+**Figure S18:** Vercel project showing the deployed Student Assignment Tracker frontend.
+```
+
+### S19: Environment variable names
+
+Show variable names with all values hidden.
+
+```markdown
+![S19 – Environment variables](screenshots/S19-environment-variables.png)
+
+**Figure S19:** Deployment configuration showing environment-variable names while sensitive values are hidden.
+```
+
+### S20: Live API documentation page
+
+```markdown
+![S20 – FastAPI documentation](screenshots/S20-fastapi-docs.png)
+
+**Figure S20:** FastAPI Swagger documentation for the deployed backend.
+```
+
+## D5. Tests
+
+Add a screenshot of actual test output only after running the test suite.
+
+```markdown
+![S21 – Automated test output](screenshots/S21-test-output.png)
+
+**Figure S21:** Actual automated test output. Include the command and result in the caption.
+```
+
+If no automated test suite exists or runs successfully, state that honestly instead of inserting a fabricated screenshot.
+
+---
+
+# Part E. Project Management and Conclusion
+
+## E1. How to Run and Test
+
+### Prerequisites
+
 - Python installed.
 - Node.js and npm installed.
 - Git installed.
 - Access to the project repository.
-- A PostgreSQL database for persistent deployment, or SQLite for local development. Backend setup From the repository root: cd backend python -m venv .venv Activate the virtual environment using the command appropriate for the operating system, then install dependencies: python -m pip install -r requirements.txt Create backend/.env for local configuration. Example variable names: SECRET_KEY=replace_with_a_local_secret DATABASE_URL=replace_with_your_database_connection_string Do not commit .env or real secret values. If DATABASE_URL is omitted, the database module falls back to the local SQLite database.
-Start the backend: python -m uvicorn app.main:app --reload Open http://127.0.0.1:8000/docs to view the local API documentation. Frontend setup Open another terminal: cd frontend npm install Create a frontend environment file with the API base URL expected by the frontend: VITE_API_URL=http://127.0.0.1:8000 Start the frontend: npm run dev Run a production build: npm run build Admin account setup The project includes backend/create_admin.py for creating an administrator account. Run it only after confirming that the local environment is configured to connect to the intended database. It uses the database configuration imported by the backend. Do not run it against production unless you intentionally want the account created in the production database. Test accounts Use the test accounts created for the demonstration. Do not place passwords or secret values in this Markdown file or in the GitHub repository. If the instructor requires credentials, include them only in the private PDF appendix in accordance with the course template. E2. GitHub Work Repository: https://github.com/fahimkhan24/Student_Assingment_Tracker
+- PostgreSQL for persistent testing, or SQLite for local development.
 
-The project was developed using Git and GitHub. Work was organized through feature branches and pull requests. The known feature work includes the frontend assignment dashboard, FastAPI backend setup, authentication, role-based authorization, admin user management, and deployment/database configuration. Feature Issue / PR link What it delivered Frontend assignment (Insert issue/PR URL) React and TypeScript dashboard assignment interface
+### 1. Clone the repository
 
-FastAPI backend setup (Insert issue/PR URL) FastAPI application and health endpoint
+```bash
+git clone https://github.com/fahimkhan24/Student_Assingment_Tracker.git
+cd Student_Assingment_Tracker
+```
 
-Authentication (Insert issue/PR URL) Signup, login, JWT, password hashing
+### 2. Backend setup
 
-Role-based access (Insert issue/PR URL) Student, teacher, and control admin role checks
+```bash
+cd backend
+python -m venv .venv
+```
 
-Admin user management (Insert issue/PR URL) User list, account creation, ban/unban, deletion PostgreSQL deployment (Insert issue/PR URL) Supabase PostgreSQL connection and Render configuration Add the actual issue and pull request URLs from GitHub. Do not invent issue numbers, PR numbers, or commit hashes. E3. Limitations
-- Refresh-token rotation and session revocation have not been verified.
-- A session management page has not been verified.
-- Audit logging and a security analytics view have not been verified.
-- Brute-force protection and login lockout have not been verified.
-- Group membership and fine-grained group permissions are not part of the verified feature set.
-- CSV exports and bulk moderation have not been verified.
-- Automated test coverage and test-run output were not provided for this report.
-- The exact endpoint list, token claims, token lifetime, and frontend token storage must be confirmed from the final source code.
-- The exact production persistence behavior should be demonstrated by creating a test record and verifying it after a restart or redeployment. E4. Future Work
-1. Add automated backend tests for authentication, assignment CRUD, and role permissions.
-2. Implement refresh-token rotation, logout, and session revocation if required by the project specification.
-3. Add audit logs for authentication and administrative actions.
-4. Add login rate limiting and brute-force protection.
-5. Add pagination and advanced filtering to user and assignment lists.
-6. Add CSV export for authorized administrators.
-7. Improve deployment monitoring and error reporting.
-8. Add a documented database migration process for schema changes. E5. Sources, Libraries and Tools Name Link / version Purpose React https://react.dev/ Frontend interface
-TypeScript https://www.typescriptlang.org/ Frontend type checking
+Activate the virtual environment.
 
-Vite https://vite.dev/ Frontend development and build
+**Windows PowerShell:**
 
-Tailwind CSS https://tailwindcss.com/ Styling
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-FastAPI https://fastapi.tiangolo.com/ REST API backend
+Install dependencies:
 
-SQLAlchemy https://www.sqlalchemy.org/ ORM and database access
+```bash
+python -m pip install -r requirements.txt
+```
 
-psycopg https://www.psycopg.org/ PostgreSQL driver
+Create a local `backend/.env` file:
 
-Supabase https://supabase.com/docs Hosted PostgreSQL database
+```env
+SECRET_KEY=replace_with_a_local_secret
+DATABASE_URL=replace_with_your_database_connection_string
+```
 
-Render https://render.com/docs Backend hosting
+Do not commit `.env` or real secret values. If `DATABASE_URL` is omitted, the database module may use the local SQLite fallback.
 
-Vercel https://vercel.com/docs Frontend hosting
+Start the backend:
 
-Git and GitHub https://docs.github.com/ Version control and collaboration
+```bash
+python -m uvicorn app.main:app --reload
+```
 
-  Supabase                https://supabase.com/docs         Hosted PostgreSQL
-database
+Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
-  Render                  https://render.com/docs           Backend hosting
+### 3. Frontend setup
 
-  Vercel                  https://vercel.com/docs           Frontend hosting
+Open another terminal:
 
-  Git and GitHub          https://docs.github.com/          Version control and
-collaboration
+```bash
+cd frontend
+npm install
+```
+
+Create a frontend environment file:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+### 4. Admin account setup
+
+The project includes `backend/create_admin.py` for creating an administrator account. Run it only after confirming that the backend environment is connected to the intended database. Do not run it against production unless you intentionally want the account created in the production database.
+
+### 5. Tests
+
+If a pytest test suite exists:
+
+```bash
+cd backend
+python -m pytest
+```
+
+Record actual output in C11. If there is no automated test suite, state that and perform the manual tests.
+
+## E2. GitHub Work
+
+**Repository:** [https://github.com/fahimkhan24/Student_Assingment_Tracker](https://github.com/fahimkhan24/Student_Assingment_Tracker)
+
+The project was developed individually using Git and GitHub. Feature branches and pull requests organized the work. The known development areas include frontend assignment dashboard, FastAPI backend setup, database persistence, authentication, RBAC, admin user management, and deployment configuration.
+
+**Table 23: GitHub issues and pull requests**
+
+| Feature | Issue / PR link | What it delivered |
+|---|---|---|
+| Frontend assignment dashboard | [Insert actual issue/PR URL] | React/TypeScript dashboard |
+| FastAPI backend setup | [Insert actual issue/PR URL] | FastAPI application and health endpoint |
+| Database persistence | [Insert actual issue/PR URL] | SQLAlchemy configuration and PostgreSQL connection |
+| User authentication | [Insert actual issue/PR URL] | Signup, login, password hashing, JWT |
+| Role-based access control | [Insert actual issue/PR URL] | Student, teacher, admin authorization |
+| Admin user management | [Insert actual issue/PR URL] | User list, account creation, ban/unban, deletion |
+| Deployment and integration | [Insert actual issue/PR URL] | Vercel, Render, and Supabase configuration |
+
+Insert actual GitHub issue and PR URLs. Do not invent issue numbers, PR numbers, commit hashes, or merged-work claims. This is an individual project; describe your own commits and development work accurately.
+
+## E3. Limitations
+
+1. Refresh-token rotation and reuse detection have not been verified.
+2. Server-side logout and session revocation have not been verified.
+3. Session-management interface has not been verified.
+4. Profile update and change-password functionality have not been verified.
+5. Group creation, membership, and permissions are not implemented or verified.
+6. Audit logging and activity dashboard have not been verified.
+7. Brute-force protection and login lockout have not been verified.
+8. Security analytics and failed-login dashboard have not been verified.
+9. Bulk moderation and CSV export have not been verified.
+10. Ownership filtering for private user-specific records needs verification.
+11. Admin self-protection rules need verification.
+12. Automated test coverage and test output must be added if available.
+13. Exact dependency versions, endpoint methods, response codes, token claims, and token lifetime must be checked against source code.
+14. Production persistence should be demonstrated by verifying a test record after restart/redeployment.
+
+## E4. Future Work
+
+1. **Automated backend tests:** Test authentication, assignment CRUD, and role permissions.
+2. **Token/session improvements:** Implement refresh rotation, logout, and session revocation if required.
+3. **Security hardening:** Add rate limiting and brute-force protection.
+4. **Ownership enforcement:** Add and test ownership checks for private records.
+5. **Audit logging:** Record important authentication and admin actions.
+6. **Admin dashboard improvements:** Add search, filters, pagination, and user detail pages if required.
+7. **CSV export:** Add authorized data export.
+8. **Group management:** Add groups and member permissions if required.
+9. **Deployment monitoring:** Improve error reporting and service monitoring.
+10. **Database migrations:** Document a migration process for schema changes.
+
+## E5. Sources, Libraries and Tools
+
+**Table 24: Sources, libraries, and tools**
+
+| Name | Version / link | Purpose |
+|---|---|---|
+| React | [react.dev](https://react.dev/) | Frontend interface |
+| TypeScript | [typescriptlang.org](https://www.typescriptlang.org/) | Frontend type checking |
+| Vite | [vite.dev](https://vite.dev/) | Frontend development/build |
+| Tailwind CSS | [tailwindcss.com](https://tailwindcss.com/) | Styling |
+| FastAPI | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/) | REST API backend |
+| SQLAlchemy | [sqlalchemy.org](https://www.sqlalchemy.org/) | ORM/database access |
+| PostgreSQL | [postgresql.org](https://www.postgresql.org/) | Relational database |
+| psycopg | [psycopg.org](https://www.psycopg.org/) | PostgreSQL driver |
+| PyJWT | [pyjwt.readthedocs.io](https://pyjwt.readthedocs.io/) | JWT handling, if present in requirements |
+| pwdlib | [pwdlib documentation](https://frankie567.github.io/pwdlib/) | Password hashing, if present in requirements |
+| Supabase | [supabase.com/docs](https://supabase.com/docs) | Hosted PostgreSQL |
+| Render | [render.com/docs](https://render.com/docs) | Backend hosting |
+| Vercel | [vercel.com/docs](https://vercel.com/docs) | Frontend hosting |
+| Git | [git-scm.com](https://git-scm.com/) | Version control |
+| GitHub | [docs.github.com](https://docs.github.com/) | Repository hosting |
+| Visual Studio Code | [code.visualstudio.com](https://code.visualstudio.com/) | Code editor |
+| ChatGPT | [chatgpt.com](https://chatgpt.com/) | Assistance with explanations, debugging guidance, and report drafting; implementation claims must be checked against source code 
+-
