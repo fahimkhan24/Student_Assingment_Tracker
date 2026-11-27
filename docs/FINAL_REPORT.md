@@ -1,24 +1,24 @@
-Final Project Submission Report
-
 Independent University, Bangladesh
-CSE309 -- Web Application & Internet
+CSE309 Web Application & Internet
+
+Final Project Submission Report
+Submitted by:
+Name: Muhammad Sanowarul Islam Fahim
+Student ID: 2420864
+Section: 05
+Team Number: Own
+
+Project Title: Student Assignment Tracker
+Vercel URL: https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app
+GitHub Repository: https://github.com/fahimkhan24/Student_Assingment_Tracker
+Submitted To:
+Sayef Reyadh
+Adjunct Lecturer
+Department of Computer Science & Engineering
+Independent University, Bangladesh
 
 Semester: Autumn 2026
-Cover Page
-Project Title: Student Assignment Tracker
-Submitted by:\
-- Name: Muhammad Sanowarul Islam Fahim - Student ID: \(2420864
-- Section: 05  - Team Number:Own
-- Individual Project
-Submitted to:
-Sayef Reyadh
-
-Adjunct Lecturer
-
-Department of Computer Science & Engineering
-
-Independent University, Bangladesh
-
+Date of Submission: 28-11-2026
 Vercel Frontend: https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/
 GitHub Repository:
 https://github.com/fahimkhan24/Student_Assingment_Tracker
