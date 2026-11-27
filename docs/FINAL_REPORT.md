@@ -12,8 +12,11 @@ Submitted by:\
 - Individual Project
 Submitted to:
 Sayef Reyadh
+
 Adjunct Lecturer
+
 Department of Computer Science & Engineering
+
 Independent University, Bangladesh
 
 Vercel Frontend: https://student-assingment-tracker-nx17mw8mk-fahimkhan24.vercel.app/
