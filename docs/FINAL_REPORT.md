@@ -8,8 +8,8 @@ Cover Page
 Project Title: Student Assignment Tracker
 Submitted by:\
 - Name: Muhammad Sanowarul Islam Fahim - Student ID: \(2420864
--   Section: 05  - Team Number:Own
-  \(Insert assigned team number, or write Individual Project if approved\)
+- Section: 05  - Team Number:Own
+- Individual Project
 Submitted to:
 Sayef Reyadh
 Adjunct Lecturer
@@ -22,7 +22,7 @@ https://github.com/fahimkhan24/Student_Assingment_Tracker\
 Backend Health Check:
 https://student-assingment-tracker.onrender.com/health\
 API Documentation:
-https://student-assingment-tracker.onrender.com/docs\
+https://student-assingment-tracker.onrender.com/docs
 Date of Submission: 28-11-2026
 Accuracy note: This report describes features established during
 development and deployment discussions. Items marked "Not implemented
